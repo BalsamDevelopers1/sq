@@ -15,12 +15,13 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            transition: background-color 0.5s ease;
         }
 
         .game-container {
             width: 100%;
             max-width: 500px;
-            background-color: #ffffff;
+            background: linear-gradient(135deg, #FF6B6B, #FFD166, #06D6A0, #118AB2, #073B4C);
             border-radius: 1.5rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             padding: 2.5rem;
@@ -43,13 +44,14 @@
             margin-bottom: 2rem;
             font-size: 1.25rem;
             font-weight: 700;
-            color: #334155;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
 
         .problem-text {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #1a202c;
+            color: #ffffff;
             margin-bottom: 2rem;
             min-height: 4rem;
             display: flex;
@@ -70,7 +72,7 @@
             font-size: 1.25rem;
             font-weight: 700;
             color: #ffffff;
-            background-color: #4a5568;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 0.75rem;
             cursor: pointer;
             transition: background-color 0.3s ease-in-out, transform 0.2s ease;
@@ -80,7 +82,7 @@
         }
 
         .option-button:hover {
-            background-color: #2d3748;
+            background-color: rgba(255, 255, 255, 0.4);
             transform: translateY(-2px);
         }
 
@@ -101,6 +103,8 @@
             font-size: 1rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
 
         .message-box.correct {
@@ -111,7 +115,7 @@
             color: #ef4444;
         }
 
-        .start-button {
+        .start-button, .pause-button, .next-button {
             width: 100%;
             padding: 1rem;
             font-size: 1.25rem;
@@ -124,14 +128,15 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border: none;
             outline: none;
+            margin-top: 1rem;
         }
 
-        .start-button:hover {
+        .start-button:hover, .pause-button:hover, .next-button:hover {
             background-color: #2563eb;
             transform: translateY(-2px);
         }
 
-        .start-button:active {
+        .start-button:active, .pause-button:active, .next-button:active {
             transform: translateY(0);
         }
 
@@ -139,7 +144,7 @@
             margin-bottom: 2rem;
             font-size: 1rem;
             font-weight: 700;
-            color: #334155;
+            color: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -152,15 +157,66 @@
             border: 2px solid #e2e8f0;
             background-color: #ffffff;
             outline: none;
+            color: #000;
+        }
+
+        .controls-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .next-button {
+            background-color: #22c55e;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1f2937;
+        }
+
+        body.dark-mode .game-container {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        body.dark-mode .score-board, body.dark-mode .problem-text, body.dark-mode .message-box {
+            color: #f9fafb;
+        }
+
+        body.dark-mode .option-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f9fafb;
+        }
+
+        body.dark-mode .option-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        #mode-toggle:hover {
+            transform: scale(1.1);
         }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<button id="mode-toggle">☀️</button>
 
 <div class="game-container">
-    <div class="score-board" id="score-board">
+    <div class="score-board" id="score-board" style="display:none;">
         <span>Score: <span id="score">0</span></span>
-        <span>Time: <span id="time">60</span>s</span>
+        <span>Time: <span id="time">20</span>s</span>
     </div>
 
     <div id="start-screen">
@@ -168,6 +224,7 @@
         <div class="timer-select-container">
             <label for="timer-select">Select Time:</label>
             <select id="timer-select" class="timer-select">
+                <option value="20">20 Seconds</option>
                 <option value="60">1 Minute</option>
                 <option value="120">2 Minutes</option>
                 <option value="180">3 Minutes</option>
@@ -179,31 +236,42 @@
     </div>
 
     <div id="game-play" style="display:none;">
+        <div class="score-board">
+            <span>Score: <span id="game-score">0</span></span>
+            <button id="pause-button" class="pause-button">Pause</button>
+            <span>Time: <span id="game-time">20</span>s</span>
+        </div>
         <div class="problem-text" id="problem"></div>
         <div class="options-container" id="options-container"></div>
         <div id="message-box" class="message-box"></div>
+        <div class="controls-container">
+            <button id="previous-button" class="next-button" style="display: none;">Previous</button>
+            <button id="next-button" class="next-button">Next</button>
+        </div>
     </div>
 </div>
 
 <script>
     const problemElement = document.getElementById('problem');
     const optionsContainer = document.getElementById('options-container');
-    const scoreElement = document.getElementById('score');
-    const timeElement = document.getElementById('time');
+    const scoreElement = document.getElementById('game-score');
+    const timeElement = document.getElementById('game-time');
     const messageBox = document.getElementById('message-box');
     const startButton = document.getElementById('start-button');
     const timerSelect = document.getElementById('timer-select');
-    const scoreBoard = document.getElementById('score-board');
     const startScreen = document.getElementById('start-screen');
     const gamePlay = document.getElementById('game-play');
+    const modeToggle = document.getElementById('mode-toggle');
+    const pauseButton = document.getElementById('pause-button');
+    const nextButton = document.getElementById('next-button');
 
     let score = 0;
-    let timer = 60;
+    let timer = 20;
     let currentProblem = {};
     let timerInterval;
+    let isPaused = false;
 
     function generateProblem() {
-        // Generate random numbers for the problem
         const num1 = Math.floor(Math.random() * 20) + 5;
         const num2 = Math.floor(Math.random() * 20) + 5;
         
@@ -235,14 +303,13 @@
         generateOptions(answer);
     }
 
-    // This function now generates 6 options instead of 4
     function generateOptions(correctAnswer) {
         let options = new Set();
         options.add(correctAnswer);
 
-        while (options.size < 6) {
+        while (options.size < 4) {
             let distractor = correctAnswer + Math.floor(Math.random() * 20) - 10;
-            if (distractor !== correctAnswer) {
+            if (distractor !== correctAnswer && distractor >= 0) {
                 options.add(distractor);
             }
         }
@@ -260,6 +327,8 @@
     }
 
     function checkAnswer(userAnswer) {
+        if (isPaused) return;
+
         if (userAnswer === currentProblem.answer) {
             score++;
             scoreElement.textContent = score;
@@ -270,7 +339,7 @@
                 generateProblem();
             }, 500);
         } else {
-            messageBox.textContent = 'Incorrect. Try the next one!';
+            messageBox.textContent = `Incorrect! The answer was ${currentProblem.answer}.`;
             messageBox.className = 'message-box incorrect';
             Array.from(optionsContainer.children).forEach(btn => {
                 btn.disabled = true;
@@ -287,22 +356,15 @@
     }
 
     function updateTimer() {
+        if (isPaused) return;
         timer--;
         timeElement.textContent = timer;
         if (timer <= 0) {
-            clearInterval(timerInterval);
-            problemElement.textContent = 'Game Over!';
-            optionsContainer.innerHTML = '';
-            messageBox.textContent = `You scored ${score} points!`;
-            messageBox.className = 'message-box';
-            startButton.style.display = 'block';
-            startScreen.style.display = 'flex';
-            gamePlay.style.display = 'none';
+            endGame();
         }
     }
 
     function startGame() {
-        // Reset score and set timer based on user selection
         score = 0;
         timer = parseInt(timerSelect.value);
         
@@ -311,7 +373,6 @@
         
         startScreen.style.display = 'none';
         gamePlay.style.display = 'flex';
-        scoreBoard.style.display = 'flex';
         
         generateProblem();
         if (timerInterval) {
@@ -320,10 +381,47 @@
         timerInterval = setInterval(updateTimer, 1000);
     }
 
+    function endGame() {
+        clearInterval(timerInterval);
+        problemElement.textContent = 'Game Over!';
+        optionsContainer.innerHTML = '';
+        messageBox.textContent = `You scored ${score} points!`;
+        messageBox.className = 'message-box';
+        startScreen.style.display = 'flex';
+        gamePlay.style.display = 'none';
+    }
+
+    function toggleMode() {
+        const body = document.body;
+        body.classList.toggle('dark-mode');
+        if (body.classList.contains('dark-mode')) {
+            modeToggle.textContent = '🌙';
+        } else {
+            modeToggle.textContent = '☀️';
+        }
+    }
+
+    function togglePause() {
+        isPaused = !isPaused;
+        if (isPaused) {
+            pauseButton.textContent = 'Resume';
+            clearInterval(timerInterval);
+        } else {
+            pauseButton.textContent = 'Pause';
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+    }
+
+    function skipProblem() {
+        generateProblem();
+    }
+
     startButton.addEventListener('click', startGame);
+    modeToggle.addEventListener('click', toggleMode);
+    pauseButton.addEventListener('click', togglePause);
+    nextButton.addEventListener('click', skipProblem);
 
     window.onload = () => {
-        scoreBoard.style.display = 'none';
         startScreen.style.display = 'flex';
         gamePlay.style.display = 'none';
     };
