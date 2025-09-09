@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Quiz</title>
+    <title>Math Rush</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -16,6 +16,7 @@
             min-height: 100vh;
             padding: 20px;
             transition: background-color 0.5s ease;
+            position: relative;
         }
 
         .game-container {
@@ -24,52 +25,65 @@
             background: linear-gradient(135deg, #FF6B6B, #FFD166, #06D6A0, #118AB2, #073B4C);
             border-radius: 1.5rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem;
+            padding: 2rem; /* Reduced padding from 2.5rem */
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
             transition: transform 0.3s ease-in-out;
+            position: relative;
+            min-height: 450px; /* Set a minimum height to prevent collapse and ensure content fits */
+            justify-content: space-between; /* Distribute space in column */
         }
 
         .game-container:hover {
             transform: translateY(-5px);
         }
 
-        .score-board {
+        .header-controls {
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem; /* Reduced margin */
             font-size: 1.25rem;
             font-weight: 700;
             color: #ffffff;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
 
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1.5rem; /* Reduced margin */
+            margin-top: 0;
+        }
+
         .problem-text {
             font-size: 2.5rem;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem; /* Reduced margin */
             min-height: 4rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-grow: 0; /* Changed to 0 to prevent it from growing too much */
         }
 
         .options-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
+            gap: 1rem; /* Reduced gap */
             width: 100%;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem; /* Reduced margin */
         }
 
         .option-button {
-            padding: 1rem;
-            font-size: 1.25rem;
+            padding: 0.8rem; /* Reduced padding */
+            font-size: 1.2rem; /* Slightly reduced font size */
             font-weight: 700;
             color: #ffffff;
             background: rgba(255, 255, 255, 0.2);
@@ -99,12 +113,15 @@
         }
 
         .message-box {
-            min-height: 2.5rem;
-            font-size: 1rem;
+            min-height: 2rem; /* Reduced min-height */
+            font-size: 0.9rem; /* Slightly reduced font size */
             font-weight: 700;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem; /* Reduced margin */
             color: #ffffff;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            display: flex; /* Ensure it's a flex container for centering */
+            align-items: center; /* Center content vertically */
+            justify-content: center; /* Center content horizontally */
         }
 
         .message-box.correct {
@@ -141,7 +158,7 @@
         }
 
         .timer-select-container {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem; /* Reduced margin */
             font-size: 1rem;
             font-weight: 700;
             color: #ffffff;
@@ -162,14 +179,16 @@
 
         .controls-container {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             width: 100%;
             gap: 1rem;
-            margin-top: 1rem;
+            margin-top: 0.5rem; /* Reduced margin */
         }
 
         .next-button {
             background-color: #22c55e;
+            width: auto;
+            padding: 0.75rem 1.5rem;
         }
 
         /* Dark Mode Styles */
@@ -181,7 +200,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
         
-        body.dark-mode .score-board, body.dark-mode .problem-text, body.dark-mode .message-box {
+        body.dark-mode .header-controls, body.dark-mode .game-title, body.dark-mode .problem-text, body.dark-mode .message-box, body.dark-mode .timer-select-container {
             color: #f9fafb;
         }
 
@@ -203,10 +222,47 @@
             font-size: 2rem;
             cursor: pointer;
             transition: transform 0.2s ease;
+            z-index: 10;
         }
         
         #mode-toggle:hover {
             transform: scale(1.1);
+        }
+
+        .header-controls .pause-button {
+            width: auto;
+            margin-top: 0;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+
+        /* Start Screen Layout */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 2.5rem 0;
+            flex-grow: 1; /* Allow it to grow to fill space */
+        }
+        #start-screen .game-title {
+            margin-bottom: 2rem; /* Standard margin for title on start screen */
+        }
+        #start-screen .timer-select-container {
+            margin-bottom: 1.5rem; /* Standard margin for select on start screen */
+        }
+        #start-screen .start-button {
+            margin-top: 0; /* Reset specific margin */
+        }
+        
+        /* Game Play layout - distribute space more evenly */
+        #game-play {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribute space vertically */
+            width: 100%;
+            height: 100%; /* Ensure it takes full height of container */
         }
     </style>
 </head>
@@ -214,13 +270,7 @@
 <button id="mode-toggle">☀️</button>
 
 <div class="game-container">
-    <div class="score-board" id="score-board" style="display:none;">
-        <span>Score: <span id="score">0</span></span>
-        <span>Time: <span id="time">20</span>s</span>
-    </div>
-
-    <div id="start-screen">
-        <div class="problem-text">Math Quiz Game</div>
+    <div class="game-title">Math Rush</div> <div id="start-screen">
         <div class="timer-select-container">
             <label for="timer-select">Select Time:</label>
             <select id="timer-select" class="timer-select">
@@ -236,7 +286,7 @@
     </div>
 
     <div id="game-play" style="display:none;">
-        <div class="score-board">
+        <div class="header-controls">
             <span>Score: <span id="game-score">0</span></span>
             <button id="pause-button" class="pause-button">Pause</button>
             <span>Time: <span id="game-time">20</span>s</span>
@@ -245,8 +295,7 @@
         <div class="options-container" id="options-container"></div>
         <div id="message-box" class="message-box"></div>
         <div class="controls-container">
-            <button id="previous-button" class="next-button" style="display: none;">Previous</button>
-            <button id="next-button" class="next-button">Next</button>
+            <button id="next-button" class="next-button">Next Question</button>
         </div>
     </div>
 </div>
@@ -321,34 +370,36 @@
             const button = document.createElement('button');
             button.className = 'option-button';
             button.textContent = option;
-            button.onclick = () => checkAnswer(option);
+            button.onclick = () => checkAnswer(option, correctAnswer, button);
             optionsContainer.appendChild(button);
         });
     }
 
-    function checkAnswer(userAnswer) {
+    function checkAnswer(userAnswer, correctAnswer, clickedButton) {
         if (isPaused) return;
 
-        if (userAnswer === currentProblem.answer) {
+        Array.from(optionsContainer.children).forEach(btn => btn.disabled = true);
+
+        if (userAnswer === correctAnswer) {
             score++;
             scoreElement.textContent = score;
             messageBox.textContent = 'Correct!';
             messageBox.className = 'message-box correct';
-            Array.from(optionsContainer.children).forEach(btn => btn.disabled = true);
+            clickedButton.classList.add('correct');
             setTimeout(() => {
                 generateProblem();
             }, 500);
         } else {
-            messageBox.textContent = `Incorrect! The answer was ${currentProblem.answer}.`;
+            messageBox.textContent = `Incorrect! The answer was ${correctAnswer}.`;
             messageBox.className = 'message-box incorrect';
+            clickedButton.classList.add('incorrect');
+
             Array.from(optionsContainer.children).forEach(btn => {
-                btn.disabled = true;
-                if (parseInt(btn.textContent) === currentProblem.answer) {
+                if (parseInt(btn.textContent) === correctAnswer) {
                     btn.classList.add('correct');
-                } else if (parseInt(btn.textContent) === userAnswer) {
-                    btn.classList.add('incorrect');
                 }
             });
+            
             setTimeout(() => {
                 generateProblem();
             }, 1500);
@@ -367,6 +418,8 @@
     function startGame() {
         score = 0;
         timer = parseInt(timerSelect.value);
+        isPaused = false;
+        pauseButton.textContent = 'Pause';
         
         scoreElement.textContent = score;
         timeElement.textContent = timer;
@@ -413,7 +466,9 @@
     }
 
     function skipProblem() {
-        generateProblem();
+        if (!isPaused) {
+             generateProblem();
+        }
     }
 
     startButton.addEventListener('click', startGame);
