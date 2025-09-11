@@ -380,14 +380,15 @@
             gameScreen.classList.add("hidden");
             
             const savedTheme = localStorage.getItem("theme");
-            if (savedTheme === "dark") {
+            // Set the default theme to dark if no preference is saved or if it's set to dark
+            if (savedTheme === "dark" || savedTheme === null) {
                 htmlElement.classList.add("dark");
                 themeToggleBtn.textContent = "🌙";
             }
         };
     </script>
     <footer class="text-center py-4 text-gray-600 text-sm dark:text-gray-400">
-        <p>&copy; Designed and Developed by Sukesh</p>
+        <p>&copy; Designed and Developed by Surendranath</p>
     </footer>
 </body>
 </html>
