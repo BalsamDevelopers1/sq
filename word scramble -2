@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Scramble II</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom styles for the draggable letters */
+        .letter-tile {
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .letter-tile:active {
+            cursor: grabbing;
+        }
+
+        .drop-zone {
+            min-width: 40px;
+            height: 52px;
+            border: 2px dashed #a5b4fc;
+            background-color: #eef2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg text-center border border-gray-200">
+        <!-- Start Screen -->
+        <div id="start-screen" class="space-y-6">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-2">Word Scramble II</h1>
+            <p class="text-gray-500 text-lg mb-6">Choose your difficulty to begin!</p>
+            <button id="beginner-btn" class="w-full bg-blue-600 text-white font-bold py-4 px-8 rounded-xl hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md text-xl">
+                Beginner
+            </button>
+            <button id="intermediate-btn" class="w-full bg-yellow-600 text-white font-bold py-4 px-8 rounded-xl hover:bg-yellow-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md text-xl">
+                Intermediate
+            </button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="hidden">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-2">Word Scramble</h1>
+            <p class="text-gray-500 mb-6">Drag the letters into place to unscramble the word!</p>
+
+            <!-- Timer and Score Display -->
+            <div class="flex justify-between items-center text-xl font-bold mb-6">
+                <div class="text-gray-600">
+                    Time Left: <span id="timer-display" class="text-indigo-600">OFF</span>
+                </div>
+                <div class="text-gray-600">
+                    Score: <span id="score-display" class="text-indigo-600">0</span>
+                </div>
+            </div>
+
+            <!-- Game Display Section -->
+            <div class="mb-8">
+                <div id="word-drop-zone-container" class="flex justify-center gap-2 mb-4 p-4 rounded-xl bg-indigo-50 border-2 border-dashed border-indigo-200">
+                    <!-- Drop zones will be inserted here by JavaScript -->
+                </div>
+                <p id="message-display" class="text-lg text-gray-700 h-6"></p>
+            </div>
+
+            <!-- Draggable Letter Tiles -->
+            <div class="space-y-4">
+                <div id="letter-tiles-container" class="flex flex-wrap justify-center gap-2 p-4 rounded-xl bg-gray-100 border border-gray-200">
+                    <!-- Draggable letter tiles will be inserted here by JavaScript -->
+                </div>
+                
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-6">
+                    <button id="new-word-btn"
+                            class="flex-1 bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl hover:bg-gray-300 transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                        New Word
+                    </button>
+                    <button id="timer-toggle-btn"
+                            class="flex-1 bg-green-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                        Toggle Timer
+                    </button>
+                    <button id="show-answer-btn"
+                            class="flex-1 bg-red-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-red-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md">
+                        Show Answer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const beginnerWords = ["cat", "dog", "sun", "moon", "star", "ball", "park", "book", "tree", "river"];
+        const intermediateWords = ["computer", "science", "history", "mathematics", "challenge", "universe", "planet", "keyboard", "javascript", "program", "developer", "galaxy", "adventure", "knowledge", "apple", "banana", "computer", "science", "elephant", "bicycle", "galaxy", "keyboard", "program", "bicycle", "adventure", "beautiful", "challenge", "develop", "science", "fantastic", "gardening", "happiness", "important", "knowledge", "landscape", "marketing", "nutrition", "optimistic", "patience", "questions", "restaurant", "seascape", "technology", "understand", "vibrating", "wonderful", "xylophone", "yesterday", "zealous", "abstract", "building", "courageous", "diversity", "excellent", "favorable", "generous", "hospital", "incredible", "journey", "kindness", "liberation", "marvelous", "naturally", "operating", "puzzling", "quizzical", "rejoicing", "serendipity", "transform", "universal", "vulnerable", "whispering", "xenophobe", "youthful", "zookeeper", "ambitious", "brilliant", "cooperate", "diligent", "effective", "flourish", "grateful", "harmonious", "illustrate", "jovially", "luminous", "magnificent", "necessary", "outstanding", "potential", "radiant", "splendid", "thoughtful", "unwavering", "vivacious", "whimsical", "xenial", "yielded", "zirconium", "abolished", "beneficial", "catalogue", "deference", "eloquent", "fortitude", "gregarious", "hesitantly", "impressive", "jealousy", "knowledgeable", "leisurely", "melodious", "notorious", "overjoyed", "perplexed", "quintessential", "resilience", "sanctuary", "tremendous", "unanimous", "venerable", "wholesome", "xanthic", "yonder", "zany", "absorbent", "bountiful", "celebrate", "delicious", "enormous", "fabulous", "glorious", "historical", "inevitable", "jubilant", "loquacious", "mischievous", "narrative", "obsolete", "picturesque", "quivering", "resplendent", "symmetrical", "teachable", "unassuming", "valorize", "victorious", "wonderful", "xenodochial", "yearning", "zestful", "abundance", "benefactor", "captivate", "dedicated", "energetic", "flamboyant", "glorious", "heritage", "illusion", "juxtapose", "kinetically", "legendary", "miraculous", "nurturing", "omnipotent", "palliative", "quintessence", "rebellious", "solicitude", "triumphantly", "unforgettable", "venerate", "wellspring", "xenial", "yearning", "zirconium", "acclaimed", "breathtaking", "consequential", "delightful", "elaborate", "fascinating", "garrulous", "hesitating", "impeccable", "jocularly", "lamentable", "meticulous", "noteworthy", "overwhelmed", "persuasive", "quizzical", "remarkable", "synthesis", "transcendent", "unwavering", "vibrating", "wholesome", "xenomorphic", "yearned", "zillionth", "accessible", "benevolent", "compelling", "diminutive", "enchanted", "fathomable", "generosity", "humanity", "immaculate", "jeopardize", "knowledgeable", "lethargic", "magnanimous", "negotiate", "optimistic", "passionate", "questioning", "resilient", "sentimental", "terrific", "unassuming", "versatile", "wholesome", "xenophobic", "youthfully", "zestfully", "abundant", "breathtaking", "congratulate", "delectable", "encompassing", "fantastic", "glimmering", "historical", "impressive", "judgmental", "knowledgeably", "luminous", "magnificent", "nebulous", "overwhelming", "picturesque", "quiescent", "relentless", "sanctimonious", "televise", "unwavering", "venerated", "whimsical", "xenial", "yesterday", "zestfully", "adventurous", "beautifully", "celebratory", "diligently", "effortlessly", "flourishing", "graciously", "harmonious", "illustrious", "jubilantly", "lamentably", "magnificently", "nourishing", "opportunistic", "perpetuate", "quizzically", "rejuvenate", "serene", "tenderness", "unfathomable", "victoriously", "wholesome", "xanthic", "yearned", "zany", "acclaimed", "brilliance", "conspicuous", "delectable", "ebullient", "frivolous", "gregarious", "hyperbole", "imagination", "jovial", "knowledgeable", "lavishly", "melancholy", "noteworthy", "obsequious", "perceptive", "quixotic", "rebellious", "sanguine", "telegraphed", "unwavering", "vacillating", "whimsical", "xenolithic", "yearned", "zillion", "achievable", "bounteous", "courageously", "dramatically", "egregious", "flawless", "gloriously", "hypothesis", "impeccable", "jubilantly", "languidly", "magnificently", "nefariously", "overwhelming", "perseverance", "quintessential", "rejuvenated", "serendipitously", "tenacious", "unquestionably", "vibrantly", "whimsical", "xanthous", "yearningly", "zirconium", "abandoned", "beneficial", "congratulations", "diminished", "eloquently", "fortuitous", "glorious", "hesitation", "imaginary", "jeopardizing", "knowledgeably", "lamentable", "magnificent", "necessity", "overwhelmingly", "perplexed", "quizzically", "reminiscent", "sentimental", "tremendously", "unanimously", "vulnerable", "whimsically", "xenolithic", "yearned", "zestful", "abominable", "bountifully", "captivating", "dilapidated", "efficiently", "fabulous", "gloriously", "historical", "imaginative", "jovially", "knowledgeable", "lamenting", "magnanimously", "necessary", "overjoyed", "persevering", "quizzical", "reminiscing", "sentimental", "terrific", "unassuming", "vibrating", "wholesome", "xenophobic", "youthfully", "zestful", "abandoned", "beneficial", "congratulations", "diminished", "eloquently", "fortuitous", "glorious", "hesitation", "imaginary", "jeopardizing", "knowledgeably", "lamentable", "magnificent", "necessity", "overwhelmingly", "perplexed", "quizzically", "reminiscent", "sentimental", "tremendously", "unanimously", "vulnerable", "whimsically", "xenolithic", "yearned", "zestful", "abominable", "bountifully", "captivating", "dilapidated", "efficiently", "fabulous", "gloriously", "historical", "imaginative", "jovially", "knowledgeable", "lamenting", "magnanimously", "necessary", "overjoyed", "persevering", "quizzical", "reminiscing", "sentimental", "terrific", "unassuming", "vibrating", "wholesome", "xenophobic", "youthfully", "zestful"];
+        
+        let currentWord = "";
+        let currentWordList = [];
+        let score = 0;
+        let droppedLetters = [];
+        let timer = null;
+        let timeLeft = 60;
+        let isTimerEnabled = false;
+
+        const startScreen = document.getElementById("start-screen");
+        const gameScreen = document.getElementById("game-screen");
+        const wordDropZoneContainer = document.getElementById("word-drop-zone-container");
+        const letterTilesContainer = document.getElementById("letter-tiles-container");
+        const messageDisplay = document.getElementById("message-display");
+        const scoreDisplay = document.getElementById("score-display");
+        const timerDisplay = document.getElementById("timer-display");
+        
+        const beginnerBtn = document.getElementById("beginner-btn");
+        const intermediateBtn = document.getElementById("intermediate-btn");
+        const newWordBtn = document.getElementById("new-word-btn");
+        const timerToggleBtn = document.getElementById("timer-toggle-btn");
+        const showAnswerBtn = document.getElementById("show-answer-btn");
+
+        // Function to shuffle an array (Fisher-Yates algorithm)
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function stopTimer() {
+            clearInterval(timer);
+            timer = null;
+            timerDisplay.textContent = isTimerEnabled ? timeLeft + "s" : "OFF";
+        }
+
+        function startTimer() {
+            if (!isTimerEnabled) return;
+
+            stopTimer(); // Clear any existing timer
+            timeLeft = 60;
+            timerDisplay.textContent = timeLeft + "s";
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft + "s";
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    messageDisplay.textContent = "Time's up! Game over. Click 'New Word' to continue.";
+                    disableDropZones(true);
+                }
+            }, 1000);
+        }
+
+        function disableDropZones(disabled) {
+            const dropZones = document.querySelectorAll('.drop-zone');
+            dropZones.forEach(zone => {
+                if (disabled) {
+                    zone.removeEventListener('dragover', preventDefault);
+                    zone.removeEventListener('drop', handleDrop);
+                } else {
+                    zone.addEventListener('dragover', preventDefault);
+                    zone.addEventListener('drop', handleDrop);
+                }
+            });
+        }
+        
+        function preventDefault(e) {
+             e.preventDefault();
+        }
+
+        // Function to handle the drop event
+        function handleDrop(e) {
+            e.preventDefault();
+            const draggedElementId = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.getElementById(draggedElementId);
+            
+            if (e.target.classList.contains('letter-tile')) {
+                return; // Prevent dropping on an existing letter
+            }
+
+            e.target.appendChild(draggedElement);
+            draggedElement.classList.remove(
+                'bg-indigo-600', 
+                'text-white', 
+                'w-12', 
+                'h-12'
+            );
+            draggedElement.classList.add(
+                'bg-white', 
+                'text-indigo-800', 
+                'w-full', 
+                'h-full',
+                'transition-transform',
+                'duration-300'
+            );
+
+            const dropZoneIndex = e.target.getAttribute('data-index');
+            const letter = draggedElement.getAttribute('data-letter');
+            droppedLetters[dropZoneIndex] = letter;
+
+            if (!droppedLetters.includes(null)) {
+                checkGuess();
+            }
+        }
+        
+        // Function to start a new round
+        function startNewRound() {
+            stopTimer();
+            // Get a random word
+            currentWord = currentWordList[Math.floor(Math.random() * currentWordList.length)];
+            const wordLetters = currentWord.split('');
+            const scrambledLetters = shuffle([...wordLetters]);
+
+            // Clear containers and reset variables
+            wordDropZoneContainer.innerHTML = '';
+            letterTilesContainer.innerHTML = '';
+            messageDisplay.textContent = '';
+            droppedLetters = new Array(currentWord.length).fill(null);
+
+            // Create drop zones for each letter of the word
+            wordLetters.forEach((letter, index) => {
+                const dropZone = document.createElement('div');
+                dropZone.classList.add('drop-zone', 'rounded-lg');
+                dropZone.setAttribute('data-index', index);
+                wordDropZoneContainer.appendChild(dropZone);
+            });
+
+            // Create draggable letter tiles
+            scrambledLetters.forEach((letter, index) => {
+                const letterTile = document.createElement('div');
+                letterTile.classList.add(
+                    'letter-tile',
+                    'bg-indigo-600',
+                    'text-white',
+                    'text-3xl',
+                    'font-bold',
+                    'w-12',
+                    'h-12',
+                    'flex',
+                    'items-center',
+                    'justify-center',
+                    'rounded-lg',
+                    'shadow-md'
+                );
+                letterTile.textContent = letter.toUpperCase();
+                letterTile.setAttribute('draggable', true);
+                letterTile.setAttribute('data-letter', letter);
+                letterTile.id = `letter-tile-${index}`;
+                letterTilesContainer.appendChild(letterTile);
+            });
+
+            // Add event listeners for drag and drop
+            addDragAndDropListeners();
+            startTimer();
+            disableDropZones(false);
+        }
+
+        function addDragAndDropListeners() {
+            const letterTiles = document.querySelectorAll('.letter-tile');
+            const dropZones = document.querySelectorAll('.drop-zone');
+
+            // Drag Start
+            letterTiles.forEach(tile => {
+                tile.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', e.target.id);
+                });
+            });
+
+            // Drop
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', preventDefault);
+                zone.addEventListener('drop', handleDrop);
+            });
+        }
+
+        // Function to check the user's guess
+        function checkGuess() {
+            const guess = droppedLetters.join('');
+            if (guess === currentWord) {
+                messageDisplay.textContent = "Correct! Great job!";
+                score++;
+                scoreDisplay.textContent = score;
+                setTimeout(startNewRound, 1500);
+            } else {
+                messageDisplay.textContent = "Oops, that's not right. Try again!";
+                resetTiles();
+            }
+        }
+
+        function resetTiles() {
+            const dropZones = document.querySelectorAll('.drop-zone');
+            dropZones.forEach(zone => {
+                if (zone.firstChild) {
+                    const tile = zone.firstChild;
+                    letterTilesContainer.appendChild(tile);
+                    tile.classList.remove(
+                        'bg-white', 
+                        'text-indigo-800', 
+                        'w-full', 
+                        'h-full'
+                    );
+                    tile.classList.add(
+                        'bg-indigo-600', 
+                        'text-white', 
+                        'w-12', 
+                        'h-12'
+                    );
+                }
+            });
+            droppedLetters = new Array(currentWord.length).fill(null);
+        }
+
+        // Event listeners
+        beginnerBtn.addEventListener("click", () => {
+            currentWordList = beginnerWords;
+            startScreen.classList.add("hidden");
+            gameScreen.classList.remove("hidden");
+            startNewRound();
+        });
+
+        intermediateBtn.addEventListener("click", () => {
+            currentWordList = intermediateWords;
+            startScreen.classList.add("hidden");
+            gameScreen.classList.remove("hidden");
+            startNewRound();
+        });
+
+        newWordBtn.addEventListener("click", startNewRound);
+        
+        timerToggleBtn.addEventListener("click", () => {
+            isTimerEnabled = !isTimerEnabled;
+            if (isTimerEnabled) {
+                timerDisplay.textContent = "60s";
+                startTimer();
+            } else {
+                stopTimer();
+                timerDisplay.textContent = "OFF";
+                disableDropZones(false);
+            }
+        });
+
+        showAnswerBtn.addEventListener("click", () => {
+            messageDisplay.textContent = `The answer is: ${currentWord.toUpperCase()}`;
+            setTimeout(startNewRound, 2000);
+        });
+
+        // Initialize the game
+        window.onload = () => {
+            startScreen.classList.remove("hidden");
+            gameScreen.classList.add("hidden");
+        };
+    </script>
+</body>
+</html>
