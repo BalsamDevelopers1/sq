@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag-tastic!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f4f8;
+            transition: background-color 0.3s ease;
+            color: #333;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1; /* Allows the main content to take up available space */
+        }
+
+        .main-container, .game-container {
+            background-color: #ffffff;
+            padding: 40px 60px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .game-container {
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #4a90e2;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        #toggle-dark-mode {
+            background-color: #4a90e2;
+            color: #fff;
+        }
+
+        #start-game {
+            background-color: #32cd32;
+            color: #fff;
+        }
+
+        .flag-image {
+            width: 250px;
+            height: auto;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        /* Dark Mode styles */
+        body.dark-mode {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+
+        body.dark-mode .main-container,
+        body.dark-mode .game-container {
+            background-color: #34495e;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode h1 {
+            color: #a0d4ff;
+        }
+
+        body.dark-mode .footer {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="main-container" id="intro-screen">
+            <h1>Flag-tastic!</h1>
+            <div class="buttons">
+                <button id="toggle-dark-mode">Toggle Dark Mode</button>
+                <button id="start-game">Start Game</button>
+            </div>
+        </div>
+
+        <div class="game-container" id="game-screen">
+            <h2>What country's flag is this?</h2>
+            <img src="https://via.placeholder.com/250x150.png?text=Sample+Flag" alt="Country Flag" class="flag-image">
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 Flag-tastic! All rights reserved.</p>
+    </footer>
+
+    <script>
+        const body = document.body;
+        const toggleButton = document.getElementById('toggle-dark-mode');
+        const startGameButton = document.getElementById('start-game');
+        const introScreen = document.getElementById('intro-screen');
+        const gameScreen = document.getElementById('game-screen');
+
+        toggleButton.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+        });
+
+        startGameButton.addEventListener('click', () => {
+            introScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+        });
+    </script>
+</body>
+</html>
