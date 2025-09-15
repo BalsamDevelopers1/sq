@@ -3,149 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flag-tastic!</title>
+    <title>Guess the Flag Game</title>
     <style>
+        /* Light and Dark Mode Variables */
+        :root {
+            /* Light Mode (Default) */
+            --background-color: #f0f4f8;
+            --container-bg-color: #ffffff;
+            --primary-color: #4a90e2;
+            --text-color: #333333;
+            --secondary-text-color: #777777;
+            --correct-color: #7ed321;
+            --incorrect-color: #d0021b;
+            --button-hover-color: #3a7bd5;
+            --toggle-bg: #ccc;
+            --toggle-circle: #fff;
+        }
+
+        body.dark-mode {
+            /* Dark Mode */
+            --background-color: #121212;
+            --container-bg-color: #1e1e1e;
+            --primary-color: #8ab4f8; /* Lighter blue for contrast */
+            --text-color: #e0e0e0;
+            --secondary-text-color: #aaaaaa;
+            --correct-color: #6a9b40; /* Darker green for contrast */
+            --incorrect-color: #b00020;
+            --button-hover-color: #658cce;
+            --toggle-bg: #555;
+            --toggle-circle: #fff;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f4f8;
-            transition: background-color 0.3s ease;
-            color: #333;
-        }
-
-        main {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            flex-grow: 1; /* Allows the main content to take up available space */
-        }
-
-        .main-container, .game-container {
-            background-color: #ffffff;
-            padding: 40px 60px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            font-family: 'Segoe UI', Arial, sans-serif;
             text-align: center;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .game-container {
-            display: none; /* Initially hidden */
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 {
-            color: #4a90e2;
-            font-size: 3em;
-            margin-bottom: 20px;
-        }
-
-        .buttons {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
             display: flex;
-            gap: 15px;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.5s, color 0.5s;
         }
-
-        button {
+        .container {
+            background-color: var(--container-bg-color);
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            max-width: 650px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background-color 0.5s, box-shadow 0.5s;
+        }
+        h1 {
+            font-size: 2.2em;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        #question {
+            font-size: 1.2em;
+            color: var(--secondary-text-color);
+            margin-bottom: 25px;
+        }
+        #flag-container {
+            height: 180px;
+            width: 300px;
+            border: 1px solid #e0e0e0;
+            margin: 25px auto;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        #options-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .option-button {
             padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            background-color: var(--container-bg-color);
+            color: var(--primary-color);
             cursor: pointer;
-            transition: transform 0.2s ease, background-color 0.2s ease;
+            font-size: 1.1em;
+            font-weight: bold;
+            flex: 1 1 45%;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
         }
-
-        button:hover {
+        .option-button:hover {
+            background-color: var(--primary-color);
+            color: var(--container-bg-color);
             transform: translateY(-2px);
         }
-
-        #toggle-dark-mode {
-            background-color: #4a90e2;
-            color: #fff;
+        .correct {
+            background-color: var(--correct-color);
+            color: white;
+            border-color: var(--correct-color);
         }
-
-        #start-game {
-            background-color: #32cd32;
-            color: #fff;
+        .incorrect {
+            background-color: var(--incorrect-color);
+            color: white;
+            border-color: var(--incorrect-color);
         }
-
-        .flag-image {
-            width: 250px;
-            height: auto;
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
+        #result {
+            margin-top: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            height: 30px;
         }
-
-        .footer {
-            padding: 20px;
-            text-align: center;
-            font-size: 0.9em;
-            color: #555;
+        #next-btn, #mode-toggle {
+            padding: 12px 30px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
             margin-top: 20px;
+            transition: background-color 0.3s, transform 0.2s;
         }
-
-        /* Dark Mode styles */
-        body.dark-mode {
-            background-color: #2c3e50;
-            color: #ecf0f1;
+        #next-btn:hover, #mode-toggle:hover {
+            background-color: var(--button-hover-color);
+            transform: translateY(-2px);
         }
-
-        body.dark-mode .main-container,
-        body.dark-mode .game-container {
-            background-color: #34495e;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        #next-btn {
+            display: none;
         }
-
-        body.dark-mode h1 {
-            color: #a0d4ff;
+        .score-container {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: var(--text-color);
         }
-
-        body.dark-mode .footer {
-            color: #aaa;
+        .score-container span {
+            font-weight: bold;
+            color: var(--primary-color);
         }
     </style>
 </head>
 <body>
-    <main>
-        <div class="main-container" id="intro-screen">
-            <h1>Flag-tastic!</h1>
-            <div class="buttons">
-                <button id="toggle-dark-mode">Toggle Dark Mode</button>
-                <button id="start-game">Start Game</button>
-            </div>
-        </div>
 
-        <div class="game-container" id="game-screen">
-            <h2>What country's flag is this?</h2>
-            <img src="https://via.placeholder.com/250x150.png?text=Sample+Flag" alt="Country Flag" class="flag-image">
+    <div class="container">
+        <h1>Guess the Flag Game</h1>
+        <button id="mode-toggle">Toggle Dark Mode</button>
+        <p id="question">What country does this flag belong to?</p>
+        <div id="flag-container"></div>
+        <div id="options-container">
+            <button class="option-button"></button>
+            <button class="option-button"></button>
+            <button class="option-button"></button>
+            <button class="option-button"></button>
         </div>
-    </main>
-
-    <footer class="footer">
-        <p>&copy; Designed and Developed by Sarveshvaran & Surendranath (G7A)</p>
-    </footer>
+        <p id="result"></p>
+        <button id="next-btn">Next Flag</button>
+        <p class="score-container">Score: <span id="score">0</span></p>
+    </div>
 
     <script>
-        const body = document.body;
-        const toggleButton = document.getElementById('toggle-dark-mode');
-        const startGameButton = document.getElementById('start-game');
-        const introScreen = document.getElementById('intro-screen');
-        const gameScreen = document.getElementById('game-screen');
+        // List of all countries and their flag URLs
+        const flags = {
+            "United States": "https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg",
+            "Canada": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Flag_of_Canada_%28Pantone%29.svg",
+            "Japan": "https://upload.wikimedia.org/wikipedia/en/9/9e/Flag_of_Japan.svg",
+            "France": "https://upload.wikimedia.org/wikipedia/en/c/c3/Flag_of_France.svg",
+            "Brazil": "https://upload.wikimedia.org/wikipedia/en/0/05/Flag_of_Brazil.svg",
+            "Germany": "https://upload.wikimedia.org/wikipedia/en/b/ba/Flag_of_Germany.svg",
+            "India": "https://upload.wikimedia.org/wikipedia/en/4/41/Flag_of_India.svg",
+            "Australia": "https://upload.wikimedia.org/wikipedia/commons/8/87/Flag_of_Australia_%28converted%29.svg",
+            "Mexico": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Flag_of_Mexico.svg",
+            "Italy": "https://upload.wikimedia.org/wikipedia/en/0/03/Flag_of_Italy.svg",
+            "China": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Flag_of_the_People%27s_Republic_of_China.svg",
+            "United Kingdom": "https://upload.wikimedia.org/wikipedia/en/a/ae/Flag_of_the_United_Kingdom.svg",
+            "South Korea": "https://upload.wikimedia.org/wikipedia/commons/0/09/Flag_of_South_Korea.svg",
+            "Egypt": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Flag_of_Egypt.svg",
+            "South Africa": "https://upload.wikimedia.org/wikipedia/commons/a/af/Flag_of_South_Africa.svg"
+        };
+        // You can paste the full list of countries here to replace the above.
 
-        toggleButton.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
+        const flagContainer = document.getElementById('flag-container');
+        const optionsContainer = document.getElementById('options-container');
+        const optionButtons = document.querySelectorAll('.option-button');
+        const resultText = document.getElementById('result');
+        const scoreSpan = document.getElementById('score');
+        const nextButton = document.getElementById('next-btn');
+        const modeToggle = document.getElementById('mode-toggle');
+
+        let score = 0;
+        let countries = Object.keys(flags);
+        let currentCountry = "";
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function newRound() {
+            currentCountry = countries[Math.floor(Math.random() * countries.length)];
+            const flagUrl = flags[currentCountry];
+            flagContainer.style.backgroundImage = `url('${flagUrl}')`;
+            
+            resultText.textContent = "";
+            nextButton.style.display = 'none';
+            optionsContainer.style.display = 'flex';
+
+            optionButtons.forEach(btn => {
+                btn.className = 'option-button';
+                btn.onclick = () => checkAnswer(btn.textContent, btn);
+            });
+
+            let options = new Set();
+            options.add(currentCountry);
+            while (options.size < 4) {
+                const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+                options.add(randomCountry);
+            }
+            
+            let shuffledOptions = Array.from(options);
+            shuffleArray(shuffledOptions);
+
+            for (let i = 0; i < optionButtons.length; i++) {
+                const button = optionButtons[i];
+                button.textContent = shuffledOptions[i];
+            }
+        }
+
+        function checkAnswer(guess, button) {
+            optionButtons.forEach(btn => btn.onclick = null);
+
+            if (guess === currentCountry) {
+                resultText.textContent = "Correct! Great job! 🎉";
+                resultText.style.color = 'var(--correct-color)';
+                button.classList.add('correct');
+                score++;
+            } else {
+                resultText.textContent = `Sorry, that's incorrect. The correct answer was ${currentCountry}.`;
+                resultText.style.color = 'var(--incorrect-color)';
+                button.classList.add('incorrect');
+                optionButtons.forEach(btn => {
+                    if (btn.textContent === currentCountry) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+            scoreSpan.textContent = score;
+            nextButton.style.display = 'block';
+        }
+        
+        // Function to toggle between light and dark mode
+        modeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            modeToggle.textContent = isDarkMode ? "Toggle Light Mode" : "Toggle Dark Mode";
         });
 
-        startGameButton.addEventListener('click', () => {
-            introScreen.style.display = 'none';
-            gameScreen.style.display = 'flex';
-        });
+        nextButton.addEventListener('click', newRound);
+        newRound();
     </script>
+
 </body>
 </html>
