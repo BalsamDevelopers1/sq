@@ -1,3 +1,6 @@
+Of course. Here's the complete, updated code for the "Guess the Flag Game" with the loading text functionality included. You can simply copy and paste this into an HTML file.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,7 +43,7 @@
             background-color: var(--background-color);
             color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -50,54 +53,61 @@
 
         .container {
             background-color: var(--container-bg-color);
-            padding: 40px 30px;
+            padding: 20px 20px;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            max-width: 650px;
+            max-width: 600px;
             width: 100%;
             box-sizing: border-box;
             transition: background-color 0.5s, box-shadow 0.5s;
         }
 
         h1 {
-            font-size: 2.2em;
+            font-size: 2em;
             color: var(--primary-color);
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
         #question {
-            font-size: 1.2em;
+            font-size: 1.1em;
             color: var(--secondary-text-color);
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
 
         #flag-container {
-            height: 180px;
-            width: 300px;
+            height: 140px;
+            width: 240px;
             border: 1px solid #e0e0e0;
-            margin: 25px auto;
+            margin: 15px auto;
             background-size: cover;
             background-position: center;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex; /* Added for centering loading text */
+            justify-content: center; /* Added for centering loading text */
+            align-items: center; /* Added for centering loading text */
+        }
+        
+        #loading-text {
+            color: var(--secondary-text-color);
         }
 
         #options-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px;
-            margin-top: 30px;
+            gap: 8px;
+            margin-top: 20px;
         }
 
         .option-button {
-            padding: 12px 25px;
+            padding: 10px 20px;
             border: 2px solid var(--primary-color);
             border-radius: 8px;
             background-color: var(--container-bg-color);
             color: var(--primary-color);
             cursor: pointer;
-            font-size: 1.1em;
+            font-size: 1em;
             font-weight: bold;
             flex: 1 1 45%;
             box-sizing: border-box;
@@ -123,25 +133,25 @@
         }
 
         #result {
-            margin-top: 25px;
-            font-size: 1.2em;
+            margin-top: 15px;
+            font-size: 1.1em;
             font-weight: bold;
-            height: 30px;
+            height: 25px;
         }
-        
+
         #next-btn, #mode-toggle, #start-btn {
-            padding: 12px 30px;
+            padding: 10px 25px;
             border: none;
             background-color: var(--primary-color);
             color: white;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1.1em;
+            font-size: 1em;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 15px;
             transition: background-color 0.3s, transform 0.2s;
         }
-        
+
         #next-btn:hover, #mode-toggle:hover, #start-btn:hover {
             background-color: var(--button-hover-color);
             transform: translateY(-2px);
@@ -152,8 +162,8 @@
         }
 
         .score-container {
-            margin-top: 20px;
-            font-size: 1.1em;
+            margin-top: 15px;
+            font-size: 1em;
             color: var(--text-color);
         }
 
@@ -167,8 +177,8 @@
         }
 
         #footer {
-            margin-top: 30px;
-            font-size: 0.9em;
+            margin-top: 15px;
+            font-size: 0.8em;
             color: var(--secondary-text-color);
             text-align: center;
         }
@@ -179,10 +189,12 @@
         <h1>Guess the Flag Game</h1>
         <button id="start-btn">Start Game</button>
         <button id="mode-toggle">Toggle Dark Mode</button>
-        
+
         <div id="game-content" class="hidden">
             <p id="question">What country does this flag belong to?</p>
-            <div id="flag-container"></div>
+            <div id="flag-container">
+                <p id="loading-text" class="hidden">Loading flag image...</p>
+            </div>
             <div id="options-container">
                 <button class="option-button"></button>
                 <button class="option-button"></button>
@@ -193,7 +205,7 @@
             <button id="next-btn">Next Flag</button>
             <p class="score-container">Score: <span id="score">0</span></p>
         </div>
-        <p id="footer">Designed and Developed by Sarvesh and Surendranath(G7A)</p>
+        <p id="footer">Designed and Developed by Sarvesh and Surendranath</p>
     </div>
 
     <script>
@@ -395,7 +407,7 @@
 "Zambia": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Zambia.svg",
 "Zimbabwe": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Flag_of_Zimbabwe.svg"
         };
-        
+
         const flagContainer = document.getElementById('flag-container');
         const optionsContainer = document.getElementById('options-container');
         const optionButtons = document.querySelectorAll('.option-button');
@@ -405,6 +417,7 @@
         const modeToggle = document.getElementById('mode-toggle');
         const startButton = document.getElementById('start-btn');
         const gameContent = document.getElementById('game-content');
+        const loadingText = document.getElementById('loading-text');
 
         let score = 0;
         let countries = Object.keys(flags);
@@ -418,10 +431,26 @@
         }
 
         function newRound() {
+            loadingText.classList.remove('hidden');
+            flagContainer.style.backgroundImage = 'none'; // Clear the previous flag
+
             currentCountry = countries[Math.floor(Math.random() * countries.length)];
             const flagUrl = flags[currentCountry];
-            flagContainer.style.backgroundImage = `url('${flagUrl}')`;
+
+            // Use a temporary image object to check for loading
+            const tempImage = new Image();
+            tempImage.onload = () => {
+                loadingText.classList.add('hidden');
+                flagContainer.style.backgroundImage = `url('${flagUrl}')`;
+            };
+            tempImage.src = flagUrl;
             
+            // Set a timeout in case the image fails to load, to still show the game
+            tempImage.onerror = () => {
+                loadingText.classList.add('hidden');
+                console.error('Failed to load flag image:', flagUrl);
+            };
+
             resultText.textContent = "";
             nextButton.style.display = 'none';
             optionsContainer.style.display = 'flex';
@@ -437,7 +466,7 @@
                 const randomCountry = countries[Math.floor(Math.random() * countries.length)];
                 options.add(randomCountry);
             }
-            
+
             let shuffledOptions = Array.from(options);
             shuffleArray(shuffledOptions);
 
@@ -485,3 +514,4 @@
     </script>
 </body>
 </html>
+```
