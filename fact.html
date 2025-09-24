@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fact or Fiction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-100">Fact or Fiction</h1>
+
+        <!-- Start Screen -->
+        <div id="start-container" class="text-center">
+            <p class="text-xl mb-6">Test your knowledge with these fun and interesting facts and fictions!</p>
+            <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 transform hover:scale-105 shadow-md">
+                Start Game
+            </button>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="hidden">
+            <div id="statement-box" class="bg-gray-700 p-6 rounded-xl mb-6 text-center text-xl font-medium min-h-[100px] flex items-center justify-center">
+                <p id="statement-text">Loading...</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
+                <button id="fact-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 transform hover:scale-105 shadow-md">
+                    Fact
+                </button>
+                <button id="fiction-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 transform hover:scale-105 shadow-md">
+                    Fiction
+                </button>
+            </div>
+            
+            <div id="feedback-box" class="text-center text-lg font-bold min-h-[40px]"></div>
+
+            <button id="next-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 mt-4 shadow-md opacity-0 pointer-events-none">
+                Next Question
+            </button>
+        </div>
+
+        <!-- Score & End Screen -->
+        <div id="result-container" class="hidden text-center">
+            <h2 class="text-2xl font-bold mb-4">Quiz Complete!</h2>
+            <p class="text-xl">Your final score is: <span id="score-text" class="text-green-400 font-bold">0</span> out of <span id="total-text">0</span></p>
+            <button id="restart-btn" class="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-xl transition-colors duration-300 mt-6 shadow-md">
+                Play Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Array of facts and fictions
+        const statements = [
+            { statement: "The shortest war in history was between Britain and Zanzibar and lasted for only 38 minutes.", isFact: true },
+            { statement: "Bananas grow on trees.", isFact: false },
+            { statement: "A group of owls is called a parliament.", isFact: true },
+            { statement: "The Eiffel Tower was originally intended for a different city.", isFact: false },
+            { statement: "It is impossible for most people to lick their own elbow.", isFact: true },
+            { statement: "Sharks are mammals.", isFact: false },
+            { statement: "Chewing gum burns an average of 11 calories per hour.", isFact: true },
+            { statement: "You can't hum while holding your nose.", isFact: true },
+            { statement: "Penguins can fly.", isFact: false },
+            { statement: "The average person walks the equivalent of five times around the world in their lifetime.", isFact: false },
+            { statement: "The first computer mouse was made of wood.", isFact: true },
+            { statement: "A group of kangaroos is called a mob.", isFact: true },
+            { statement: "Mount Everest is the tallest mountain on Earth.", isFact: false },
+            { statement: "The Great Wall of China is visible from space.", isFact: false },
+            { statement: "Honey never spoils.", isFact: true },
+            { statement: "An octopus has three hearts.", isFact: true },
+            { statement: "The human nose can remember 50,000 different scents.", isFact: true },
+            { statement: "The word 'uncopyrightable' is the longest English word with no repeated letters.", isFact: true },
+            { statement: "Mars is the red planet because it is covered in rust.", isFact: true },
+            { statement: "Some cats are allergic to humans.", isFact: true },
+            { statement: "It is illegal to own a single guinea pig in Switzerland.", isFact: true },
+            { statement: "Humans share 50% of their DNA with bananas.", isFact: true },
+            { statement: "The unicorn is the national animal of Scotland.", isFact: true },
+            { statement: "A crocodile cannot stick its tongue out.", isFact: true },
+            { statement: "The total weight of all the ants on Earth is greater than the total weight of all the humans on Earth.", isFact: false },
+            { statement: "The sun is yellow.", isFact: false },
+            { statement: "The star Polaris is the brightest star in the night sky.", isFact: false },
+            { statement: "Cows have four stomachs.", isFact: false },
+            { statement: "The coldest temperature ever recorded on Earth was in Antarctica.", isFact: true },
+            { statement: "The planet Neptune is named after the Greek god of the sea.", isFact: false },
+            { statement: "Venus is the hottest planet in our solar system.", isFact: true },
+            { statement: "The longest word in the English language is 'Pneumonoultramicroscopicsilicovolcanoconiosis'.", isFact: true },
+            { statement: "Banging your head against a wall burns 150 calories an hour.", isFact: true },
+            { statement: "The most recent common ancestor of all humans lived in the last 15,000 years.", isFact: false },
+            { statement: "Wombat poop is cube-shaped.", isFact: true },
+            { statement: "An ostrich's eye is bigger than its brain.", isFact: true },
+            { statement: "The Canary Islands are named after the canary bird.", isFact: false },
+            { statement: "The largest volcano in our solar system is on Mars.", isFact: true },
+            { statement: "The first person to be convicted of speeding was going 8 mph.", isFact: true },
+            { statement: "It's a myth that goldfish have a memory of only three seconds.", isFact: true },
+            { statement: "The sound of a lightning bolt is a clap of thunder.", isFact: true },
+            { statement: "The scientific name for a fear of long words is Hippopotomonstrosesquippedaliophobia.", isFact: true },
+            { statement: "The tiny amount of gold in a human body is worth a few cents.", isFact: false },
+            { statement: "Tears contain a natural painkiller.", isFact: true },
+            { statement: "A 'jiffy' is an actual unit of time.", isFact: true },
+            { statement: "Humans have more than 200 bones in their bodies.", isFact: true },
+            { statement: "Butterflies taste with their feet.", isFact: true },
+            { statement: "A 'group' of butterflies is called a kaleidoscope.", isFact: true },
+            { statement: "The moon has a dark side.", isFact: false },
+            { statement: "Pigs can't look up into the sky.", isFact: true },
+            { statement: "A bolt of lightning is hotter than the surface of the sun.", isFact: true },
+            { statement: "There are more trees on Earth than stars in the Milky Way.", isFact: false },
+            { statement: "The only continent that lies in all four hemispheres is Africa.", isFact: true },
+            { statement: "The world's largest desert is the Sahara Desert.", isFact: false },
+            { statement: "Some species of jellyfish are immortal.", isFact: true },
+            { statement: "The fingerprints of koalas are so similar to humans that they have been mistaken at crime scenes.", isFact: true },
+            { statement: "A group of ferrets is called a 'business'.", isFact: true },
+            { statement: "The longest time a chicken has ever flown is 13 seconds.", isFact: true },
+            { statement: "The first product to have a barcode scanned was a pack of Wrigley's chewing gum.", isFact: true },
+            { statement: "The longest ever recorded flight of a chicken is 13 seconds.", isFact: false },
+            { statement: "There is a city called 'Rome' on every continent except Antarctica.", isFact: true },
+            { statement: "It is possible to get a sunburn on a cloudy day.", isFact: true },
+            { statement: "The Earth is the only planet not named after a Roman or Greek god.", isFact: true },
+            { statement: "The human eye can only see three colors: red, green, and blue.", isFact: false },
+            { statement: "More than 50% of all movies were filmed in a single studio.", isFact: false },
+            { statement: "The average person consumes 1,600,000 grains of rice in their lifetime.", isFact: false },
+            { statement: "The average human skeleton weighs about 10 pounds.", isFact: false },
+            { statement: "The average human eats 8 spiders in their sleep in a lifetime.", isFact: false },
+            { statement: "The total weight of all the microbes in the human body is greater than the total weight of the human body.", isFact: false },
+            { statement: "The average person will spend six months of their life waiting for red lights to turn green.", isFact: true },
+            { statement: "The total weight of all the ants on Earth is equal to the total weight of all the humans on Earth.", isFact: true },
+            { statement: "A crocodile cannot stick its tongue out.", isFact: true },
+            { statement: "It is impossible for most people to lick their own elbow.", isFact: true },
+            { statement: "The name of the planet Saturn comes from the Greek god of agriculture.", isFact: false },
+            { statement: "The planet Mercury is the second smallest planet in our solar system.", isFact: false },
+            { statement: "The planet Mars is named after the Greek god of war.", isFact: false },
+            { statement: "A group of flamingos is called a 'flamboyance'.", isFact: true },
+            { statement: "A group of crows is called a 'murder'.", isFact: true },
+            { statement: "The human brain is made up of about 75% water.", isFact: true },
+            { statement: "The human body is made up of about 60% water.", isFact: true },
+            { statement: "The human body contains enough carbon to make 9,000 pencils.", isFact: true },
+            { statement: "The human body contains enough fat to make seven bars of soap.", isFact: true },
+            { statement: "The human body contains enough iron to make a nail 3 inches long.", isFact: true },
+            { statement: "The human body contains enough sugar to make a cup of tea with milk.", isFact: false },
+            { statement: "The human body contains enough salt to fill a salt shaker.", isFact: false },
+            { statement: "The human body contains enough calcium to make a bone.", isFact: false },
+            { statement: "The human body contains enough phosphorus to make a match head.", isFact: false },
+            { statement: "The human body contains enough water to fill a bathtub.", isFact: false },
+            { statement: "The human body contains enough blood to fill a bucket.", isFact: false },
+            { statement: "The human body contains enough protein to make a steak.", isFact: false },
+            { statement: "The human body contains enough fat to make a candle.", isFact: false },
+            { statement: "The human body contains enough iron to make a coin.", isFact: false },
+            { statement: "The human body contains enough calcium to make a statue.", isFact: false },
+            { statement: "The human body contains enough phosphorus to make a light bulb.", isFact: false },
+            { statement: "The human body contains enough water to fill a swimming pool.", isFact: false },
+            { statement: "The human body contains enough blood to fill a swimming pool.", isFact: false },
+            { statement: "The human body contains enough protein to make a large steak.", isFact: false },
+            { statement: "The human body contains enough fat to make a large candle.", isFact: false },
+            { statement: "The human body contains enough iron to make a large coin.", isFact: false },
+            { statement: "The human body contains enough calcium to make a large statue.", isFact: false },
+            { statement: "The human body contains enough phosphorus to make a large light bulb.", isFact: false },
+            { statement: "The human body contains enough water to fill a large swimming pool.", isFact: false },
+            { statement: "The human body contains enough blood to fill a large swimming pool.", isFact: false },
+            { statement: "The human body contains enough protein to make a large steak.", isFact: false },
+            { statement: "The human body contains enough fat to make a large candle.", isFact: false },
+            { statement: "The human body contains enough iron to make a large coin.", isFact: false },
+            { statement: "The human body contains enough calcium to make a large statue.", isFact: false },
+            { statement: "The human body contains enough phosphorus to make a large light bulb.", isFact: false },
+            { statement: "The human body contains enough water to fill a large swimming pool.", isFact: false },
+            { statement: "The human body contains enough blood to fill a large swimming pool.", isFact: false }
+        ];
+
+        // DOM elements
+        const startContainer = document.getElementById('start-container');
+        const startBtn = document.getElementById('start-btn');
+        const statementText = document.getElementById('statement-text');
+        const factBtn = document.getElementById('fact-btn');
+        const fictionBtn = document.getElementById('fiction-btn');
+        const feedbackBox = document.getElementById('feedback-box');
+        const nextBtn = document.getElementById('next-btn');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultContainer = document.getElementById('result-container');
+        const scoreText = document.getElementById('score-text');
+        const totalText = document.getElementById('total-text');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // Game state variables
+        let currentStatementIndex = 0;
+        let score = 0;
+        let gameStatements = [];
+
+        // Function to shuffle an array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Function to load a new statement
+        function loadStatement() {
+            // Check if all statements have been shown
+            if (currentStatementIndex >= gameStatements.length) {
+                showResults();
+                return;
+            }
+
+            // Get the current statement from the temporary gameStatements array
+            const currentStatement = gameStatements[currentStatementIndex];
+            statementText.textContent = currentStatement.statement;
+            
+            // Reset UI for the next question
+            feedbackBox.textContent = '';
+            factBtn.disabled = false;
+            fictionBtn.disabled = false;
+            factBtn.classList.remove('bg-green-600', 'bg-red-600');
+            fictionBtn.classList.remove('bg-green-600', 'bg-red-600');
+            factBtn.classList.add('bg-green-600');
+            fictionBtn.classList.add('bg-red-600');
+            nextBtn.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Function to check the user's answer
+        function checkAnswer(userGuessIsFact) {
+            const currentStatement = gameStatements[currentStatementIndex];
+            const isCorrect = userGuessIsFact === currentStatement.isFact;
+
+            // Update UI based on correctness
+            if (isCorrect) {
+                feedbackBox.textContent = 'Correct!';
+                feedbackBox.className = 'text-center text-lg font-bold text-green-400 min-h-[40px]';
+                score++;
+            } else {
+                feedbackBox.textContent = 'Incorrect.';
+                feedbackBox.className = 'text-center text-lg font-bold text-red-400 min-h-[40px]';
+            }
+
+            // Disable buttons and show the next button
+            factBtn.disabled = true;
+            fictionBtn.disabled = true;
+            nextBtn.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        // Function to show final results
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            scoreText.textContent = score;
+            totalText.textContent = gameStatements.length;
+        }
+
+        // Function to start or restart the game
+        function startGame() {
+            startContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            restartGame();
+        }
+
+        function restartGame() {
+            currentStatementIndex = 0;
+            score = 0;
+            shuffleArray(statements);
+            // Select the first 5 statements for this game
+            gameStatements = statements.slice(0, 5);
+            resultContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            loadStatement();
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        factBtn.addEventListener('click', () => checkAnswer(true));
+        fictionBtn.addEventListener('click', () => checkAnswer(false));
+        nextBtn.addEventListener('click', () => {
+            currentStatementIndex++;
+            loadStatement();
+        });
+        restartBtn.addEventListener('click', restartGame);
+
+    </script>
+
+</body>
+</html>
