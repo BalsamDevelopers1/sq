@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Number Caller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1a202c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            max-width: 90vw;
+            width: 500px;
+        }
+        .number-display {
+            background-color: #3b82f6;
+            color: #fff;
+            font-size: 5rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 150px;
+            width: 150px;
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            border: 5px solid #2563eb;
+            transition: transform 0.2s ease-in-out;
+        }
+        .number-display.called {
+            transform: scale(1.1);
+        }
+        .called-numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #e2e8f0;
+        }
+        .called-numbers-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+        .called-numbers-grid::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .called-numbers-grid::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+        }
+        .called-number-item {
+            background-color: #e2e8e0;
+            color: #4a5568;
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+        button:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+<div class="container text-center">
+    <h1 class="text-4xl font-bold mb-6 text-gray-800">Bingo Caller Quiz</h1>
+
+    <div id="scoreDisplay" class="text-xl font-semibold mb-2 text-gray-600">Score: 0</div>
+    <div id="numberDisplay" class="number-display">
+        <span class="text-2xl">?</span>
+    </div>
+
+    <div id="questionDisplay" class="text-xl font-semibold mb-4 text-gray-600 h-6">Loading Quiz Data...</div>
+
+    <button id="callNumberBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg text-lg mb-6 transition-all duration-200 ease-in-out hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" disabled>
+        Get Question
+    </button>
+    <button id="resetBtn" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg text-lg mb-6 transition-all duration-200 ease-in-out hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 hidden">
+        Reset Game
+    </button>
+
+    <hr class="my-6 border-gray-300">
+
+    <div class="mb-4">
+        <h2 class="text-2xl font-bold mb-2 text-gray-700">Called Numbers</h2>
+        <div id="calledNumbersList" class="called-numbers-grid">
+            </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const numberDisplay = document.getElementById('numberDisplay');
+        const questionDisplay = document.getElementById('questionDisplay');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const callNumberBtn = document.getElementById('callNumberBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const calledNumbersList = document.getElementById('calledNumbersList');
+
+        let numbersPool = [];
+        let calledNumbers = [];
+        let quizQuestions = {}; // This will hold the loaded data: {number: "question"}
+        let currentNumberToCall = null;
+        let isQuestionStage = true;
+        let score = 0;
+        const CSV_FILE = 'quiz_data.csv'; // Link to your CSV file
+
+        /**
+         * Fetches and processes the CSV data into the quizQuestions object.
+         * @returns {Promise<void>}
+         */
+        const loadQuizData = async () => {
+            try {
+                const response = await fetch(CSV_FILE);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const csvText = await response.text();
+                
+                // Simple CSV parsing: split by line, skip header, split columns by comma
+                const rows = csvText.trim().split('\n').slice(1); 
+                
+                rows.forEach(row => {
+                    // Use a simple regex to handle commas inside quotes for questions
+                    const match = row.match(/^(\d+),"(.*)"$/);
+                    if (match) {
+                        const number = parseInt(match[1]);
+                        const question = match[2];
+                        quizQuestions[number] = question;
+                    } else {
+                         // Fallback for rows without quotes (if any)
+                        const parts = row.split(',');
+                        if(parts.length >= 2) {
+                            const number = parseInt(parts[0]);
+                            const question = parts.slice(1).join(',').trim().replace(/^"|"$/g, '');
+                            quizQuestions[number] = question;
+                        }
+                    }
+                });
+
+                console.log(`Loaded ${Object.keys(quizQuestions).length} questions.`);
+                resetGame(); // Start the game once data is loaded
+                callNumberBtn.disabled = false;
+                questionDisplay.textContent = 'Data loaded. Click "Get Question" to start!';
+
+            } catch (error) {
+                console.error('Failed to load quiz data:', error);
+                questionDisplay.textContent = `Error loading quiz data from ${CSV_FILE}. Check console.`;
+                callNumberBtn.disabled = true;
+            }
+        };
+
+        const generateQuizQuestion = (number) => {
+            const question = quizQuestions[number];
+            if (question) {
+                return question;
+            }
+            return `Question not found for number ${number}. Please reset.`;
+        };
+
+        const resetGame = () => {
+            // Re-populate numbersPool from the keys of the loaded quizQuestions object
+            numbersPool = Object.keys(quizQuestions).map(Number);
+            calledNumbers = [];
+            currentNumberToCall = null;
+            isQuestionStage = true;
+            score = 0;
+            numberDisplay.innerHTML = '<span>?</span>';
+            // Only reset question display if data is loaded, otherwise keep the loading message
+            if (Object.keys(quizQuestions).length > 0) {
+                 questionDisplay.textContent = 'Click "Get Question" to start!';
+            }
+            scoreDisplay.textContent = 'Score: 0';
+            numberDisplay.classList.remove('called');
+            calledNumbersList.innerHTML = '';
+            callNumberBtn.disabled = false;
+            callNumberBtn.textContent = 'Get Question';
+            callNumberBtn.classList.remove('hidden');
+            resetBtn.classList.add('hidden');
+        };
+
+        const processCall = () => {
+            if (isQuestionStage) {
+                if (numbersPool.length === 0) {
+                    numberDisplay.innerHTML = '<span>End</span>';
+                    questionDisplay.textContent = `Game Over! Final Score: ${score}`;
+                    callNumberBtn.disabled = true;
+                    callNumberBtn.classList.add('hidden');
+                    resetBtn.classList.remove('hidden');
+                    return;
+                }
+
+                const randomIndex = Math.floor(Math.random() * numbersPool.length);
+                currentNumberToCall = numbersPool.splice(randomIndex, 1)[0];
+
+                questionDisplay.textContent = generateQuizQuestion(currentNumberToCall);
+                callNumberBtn.textContent = 'Reveal Answer';
+                isQuestionStage = false;
+
+            } else {
+                calledNumbers.push(currentNumberToCall);
+
+                // Scoring Logic: Awards 10 points if the revealed number is between 31 and 45
+                if (currentNumberToCall >= 31 && currentNumberToCall <= 45) {
+                    score += 10;
+                    scoreDisplay.textContent = 'Score: ' + score;
+                }
+
+                // Animate and display number
+                numberDisplay.classList.remove('called');
+                numberDisplay.innerHTML = `<span>${currentNumberToCall}</span>`;
+                void numberDisplay.offsetWidth; // Force reflow for re-animation
+                numberDisplay.classList.add('called');
+
+                // Update called numbers list
+                const numberItem = document.createElement('div');
+                numberItem.classList.add('called-number-item');
+                numberItem.textContent = currentNumberToCall;
+                calledNumbersList.appendChild(numberItem);
+                calledNumbersList.scrollTop = calledNumbersList.scrollHeight;
+
+                questionDisplay.textContent = 'Answer revealed.';
+                callNumberBtn.textContent = 'Get Question';
+                isQuestionStage = true;
+            }
+        };
+
+        // Initialize by loading the data
+        loadQuizData();
+
+        callNumberBtn.addEventListener('click', processCall);
+        resetBtn.addEventListener('click', resetGame);
+    });
+</script>
+</body>
+</html>
