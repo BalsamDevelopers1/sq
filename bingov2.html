@@ -116,11 +116,13 @@
 
         let numbersPool = [];
         let calledNumbers = [];
-        let quizQuestions = {}; // This will hold the loaded data: {number: "question"}
+        let quizQuestions = {}; 
         let currentNumberToCall = null;
         let isQuestionStage = true;
         let score = 0;
-        const CSV_FILE = 'quiz_data.csv'; // Link to your CSV file
+        
+        // --- CHANGE APPLIED HERE ---
+        const CSV_FILE = 'bingov2.csv'; // Link to the renamed CSV file
 
         /**
          * Fetches and processes the CSV data into the quizQuestions object.
