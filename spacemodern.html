@@ -534,6 +534,7 @@
                 optionsContainer.appendChild(optionElement);
             });
             
+            // Make sure Next button is hidden at the start of each question
             document.getElementById('next-btn').style.display = 'none';
             
             const progress = ((currentQuestion) / questions.length) * 100;
@@ -590,11 +591,14 @@
             const question = questions[currentQuestion];
             const options = document.querySelectorAll('.option');
             const betterLuckContainer = document.getElementById('better-luck-container');
+            const nextBtn = document.getElementById('next-btn');
             
+            // Disable all options after selection
             options.forEach(option => {
                 option.style.pointerEvents = 'none';
             });
             
+            // Mark correct and incorrect answers
             options.forEach((option, index) => {
                 if (index === question.correct) {
                     option.classList.add('correct');
@@ -634,7 +638,8 @@
                 topic: question.topic
             });
             
-            document.getElementById('next-btn').style.display = 'block';
+            // Make sure the Next button is visible after answer selection
+            nextBtn.style.display = 'block';
         }
 
         function nextQuestion() {
