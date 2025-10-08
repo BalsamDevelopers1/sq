@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mission Knowledge: Social World</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Custom configuration for Tailwind -->
     <script>
         tailwind.config = {
             theme: {
@@ -60,11 +58,9 @@
         }
     </style>
 </head>
-<body class="bg-adventure-bg min-h-screen p-4 flex items-center justify-center font-sans">
+<body class="bg-adventure-bg min-h-screen p-4 flex flex-col items-center justify-center font-sans">
 
     <div id="app-container" class="w-full max-w-5xl bg-slate-700/50 backdrop-blur-sm p-6 sm:p-10 rounded-xl shadow-2xl border border-adventure-primary/30">
-
-        <!-- ===== 1. START PAGE (Initial View) ===== -->
         <div id="start-page" class="text-center py-16 sm:py-24">
             <h1 class="text-6xl sm:text-7xl font-extrabold text-adventure-primary mb-4">
                 Mission Knowledge
@@ -73,46 +69,36 @@
                 "The biggest adventure you can take is to live the life of your dreams."
             </p>
 
-            <button 
-                onclick="startGame()" 
+            <button
+                onclick="startGame()"
                 class="px-10 py-4 bg-adventure-secondary text-adventure-bg text-xl font-bold rounded-xl hover:bg-emerald-600 transition duration-300 shadow-2xl transform hover:scale-105 border-b-4 border-emerald-800">
                 Start Social Mission
             </button>
             <p class="text-sm text-slate-400 mt-8">Social World: Timeline Challenge (4-Question Set)</p>
         </div>
 
-        <!-- ===== 2. GAME PAGE (Hidden Initially) ===== -->
         <div id="game-page" class="hidden">
-            <!-- Header -->
             <header class="text-center mb-8">
                 <h2 class="text-3xl sm:text-4xl font-bold text-adventure-primary">Social World Challenge</h2>
                 <p class="text-sm text-slate-400 mt-1">Connect the Historical Period on the left with its Key Event on the right.</p>
             </header>
 
-            <!-- Game Area -->
             <div id="game-container" class="space-y-6">
                 <div id="score-board" class="flex justify-between items-center text-adventure-text text-lg font-semibold">
-                    <!-- Match count now shows the current set size (4) -->
-                    <span id="match-count">Matches: 0 / 4</span> 
+                    <span id="match-count">Matches: 0 / 4</span>
                     <div id="message-box" class="text-lg font-bold text-center h-6"></div>
                 </div>
 
                 <div id="match-grid" class="grid grid-cols-2 gap-4 md:gap-8">
-                    <!-- Timeline/Period Column -->
                     <div id="periods-column" class="space-y-4">
                         <h3 class="text-xl font-semibold text-adventure-primary border-b pb-2 border-adventure-primary/50">Historical Periods</h3>
-                        <!-- Period items will be populated here by JavaScript -->
-                    </div>
-
-                    <!-- Event Column -->
+                        </div>
                     <div id="events-column" class="space-y-4">
                         <h3 class="text-xl font-semibold text-adventure-secondary border-b pb-2 border-adventure-secondary/50">Key Events</h3>
-                        <!-- Event items will be populated here by JavaScript -->
-                    </div>
+                        </div>
                 </div>
             </div>
-            
-            <!-- Victory Modal (Hidden by default) -->
+
             <div id="victory-modal" class="hidden fixed inset-0 bg-adventure-bg bg-opacity-95 flex items-center justify-center z-50 p-4">
                 <div class="bg-slate-800 p-8 rounded-xl shadow-2xl text-center border-4 border-adventure-secondary">
                     <p class="text-4xl font-bold text-adventure-secondary mb-4">SET COMPLETE!</p>
@@ -125,10 +111,13 @@
         </div>
     </div>
 
+    <footer class="mt-8 text-center text-slate-400 text-sm">
+        Developed By **Sukesh (G7A)**
+    </footer>
     <script>
         // Define the size of each challenge set
-        const SET_SIZE = 4; 
-        
+        const SET_SIZE = 4;
+
         // --- Game Data (Full Pool) ---
         const GAME_DATA = [
             // --- Original 3 Pairs ---
@@ -139,7 +128,7 @@
             { id: 4, type: 'event', text: "Development of Democracy", matchId: 1 },
             { id: 5, type: 'event', text: "Leonardo da Vinci's Works", matchId: 2 },
             { id: 6, type: 'event', text: "Invention of the Steam Engine", matchId: 3 },
-            
+
             // --- 20 New Pairs Added ---
             { id: 7, type: 'period', text: "Middle Ages", matchId: 8, tooltip: "c. 5th - 15th Century CE" },
             { id: 8, type: 'event', text: "Construction of Gothic Cathedrals", matchId: 7 },
@@ -221,7 +210,7 @@
         function showMessage(text, isError = false) {
             messageBox.textContent = text;
             messageBox.className = 'text-lg font-bold text-center h-6 ' + (isError ? 'text-red-400' : 'text-adventure-secondary');
-            
+
             clearTimeout(window.messageTimeout);
             window.messageTimeout = setTimeout(() => {
                 messageBox.textContent = '';
@@ -250,18 +239,18 @@
             matches = 0;
             selectedItem = null;
             victoryModal.classList.add('hidden');
-            
+
             // --- SET SELECTION LOGIC: Select 4 random pairs ---
             const allPeriods = GAME_DATA.filter(item => item.type === 'period');
             const shuffledPeriods = shuffle([...allPeriods]); // Clone and shuffle the full pool
-            
+
             // Select only the first SET_SIZE (4) periods
             const selectedPeriods = shuffledPeriods.slice(0, SET_SIZE);
             const selectedPeriodIds = selectedPeriods.map(p => p.id);
 
             // Find the corresponding events from the full list
             const selectedEvents = GAME_DATA.filter(item => item.type === 'event' && selectedPeriodIds.includes(item.matchId));
-            
+
             currentSetData = [...selectedPeriods, ...selectedEvents];
             totalMatches = selectedPeriods.length; // Should always be 4
             // --- END SET SELECTION LOGIC ---
@@ -308,7 +297,7 @@
             div.id = `item-${item.id}`;
             div.className = `match-item p-4 rounded-lg bg-slate-800 text-adventure-text shadow-lg transform transition-all duration-200 hover:shadow-xl`;
             div.textContent = item.text;
-            
+
             // Add tooltip for periods
             if (item.type === 'period' && item.tooltip) {
                 div.title = item.tooltip;
@@ -334,13 +323,13 @@
                 if (selectedItem && selectedItem.element) {
                     selectedItem.element.classList.remove('selected');
                 }
-                
+
                 // Select the new period item
                 selectedItem = { ...item, element: element };
                 element.classList.add('selected');
                 showMessage(`Selected: ${item.text}`, false);
-            } 
-            
+            }
+
             // --- Matching Logic ---
             else if (item.type === 'event') {
                 if (!selectedItem || selectedItem.type !== 'period') {
@@ -368,10 +357,10 @@
             // Apply 'matched' styling and disable future clicks
             period.element.classList.remove('selected');
             period.element.classList.add('matched');
-            
+
             const eventElement = document.getElementById(`item-${event.id}`);
             eventElement.classList.add('matched');
-            
+
             selectedItem = null; // Clear selection
 
             showMessage("Correct Match!", false);
@@ -393,7 +382,7 @@
                 periodElement.classList.remove('selected'); // Also remove selected status on error
                 eventElement.classList.remove('error');
             }, 500);
-            
+
             selectedItem = null; // Force user to re-select a period after an error
         }
 
@@ -414,7 +403,6 @@
             startPage.classList.remove('hidden');
             gamePage.classList.add('hidden');
         };
-
     </script>
 </body>
 </html>
