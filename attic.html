@@ -1,12 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Attic Lockup</title>
-    <!-- Load Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Tone.js for ambient spooky sound effects -->
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.min.js"></script>
     <style>
         /* Custom styles for the horror atmosphere */
@@ -20,7 +19,6 @@
             justify-content: center;
             padding: 1rem;
         }
-
         .game-container {
             max-width: 90%;
             width: 700px;
@@ -34,7 +32,6 @@
             flex-direction: column;
             gap: 1.5rem;
         }
-
         #game-title {
             color: #ff4d4d; /* Brighter red for title */
             text-align: center;
@@ -42,14 +39,12 @@
             font-weight: bold;
             text-shadow: 0 0 5px #ff0000;
         }
-
         #game-text {
             font-size: 1.1rem;
             line-height: 1.6;
             text-shadow: 0 0 1px #d1d5db;
             flex-grow: 1;
         }
-
         .choice-button {
             background-color: #8b0000; /* Deep red buttons */
             color: white;
@@ -62,38 +57,43 @@
             width: 100%; /* Full width for easy tapping on mobile */
             text-align: left;
         }
-
         .choice-button:hover {
             background-color: #ff4d4d; /* Lighten on hover */
             box-shadow: 0 0 10px #ff4d4d;
         }
-
         .choice-button:active {
             transform: translateY(1px);
+        }
+        /* Custom style for the ghost image */
+        .ghost-image {
+            filter: drop-shadow(0 0 5px #ff0000); /* Red glow for the ghost */
+            opacity: 0.8; /* Slightly transparent */
         }
     </style>
 </head>
 <body>
-
     <div class="game-container">
         <h1 id="game-title">The Attic Lockup</h1>
-
-        <!-- The main text area where the story unfolds -->
-        <div id="game-text" class="text-gray-300">
+        
+        <img src="https://cdn.vectorstock.com/i/1000v/90/36/cute-ghost-isolated-halloween-concept-vector-47559036.jpg" 
+             alt="A ghostly figure" 
+             class="mx-auto my-4 ghost-image w-32 h-32 object-contain"> 
+             <div id="game-text" class="text-gray-300">
             Click "Start Game" to begin your nightmare.
         </div>
 
-        <!-- The area for choice buttons -->
         <div id="choices" class="flex flex-col gap-3">
             <button id="start-button" class="choice-button" onclick="startGame()">Start Game</button>
         </div>
-        
-        <!-- Status message for the sound prompt -->
+
         <div id="sound-status" class="text-center text-xs text-red-500 mt-2">
             Please click the screen/Start Game to enable ambient sound.
         </div>
+        
+        <div class="text-center text-xs text-gray-500 mt-4 pt-2 border-t border-gray-700">
+            Developed By Nandeesh (G7A)
+        </div>
     </div>
-
     <script>
         // Global variables
         let db, auth, userId;
@@ -118,13 +118,13 @@
                     baseFrequency: 300,
                     octaves: 2
                 }).toDestination();
-                
+
                 // Connect the noise to the pulsing filter
                 ambientNoise.connect(ambientFilter);
-                
+
                 // Set volume very low (e.g., -30 decibels) to make it background atmosphere
-                ambientNoise.volume.value = -30; 
-                
+                ambientNoise.volume.value = -30;
+
                 // Start the sound and the filter effect
                 ambientNoise.start();
                 ambientFilter.start();
@@ -224,7 +224,7 @@
             startAtmosphere();
             // Start the game at the beginning scene
             updateScene("START");
-            
+
             // Remove the start button after the game has begun
             const startButton = document.getElementById('start-button');
             if (startButton) {
@@ -252,10 +252,10 @@
                 const button = document.createElement('button');
                 button.className = 'choice-button';
                 button.textContent = choice.text;
-                
+
                 // Set the click handler to load the next scene
                 button.onclick = () => updateScene(choice.nextScene);
-                
+
                 choicesElement.appendChild(button);
             });
 
