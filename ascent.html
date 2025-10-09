@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Ascent!!!</title>
+    <script src="./WordAscent!!!_files/saved_resource"></script> 
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5',
+                        'secondary': '#10b981',
+                        'match-bg': '#e0f2f1',
+                        'error-bg': '#fee2e2',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.left-1\/2{left:50%}.z-50{z-index:50}.col-span-2{grid-column:span 2 / span 2}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.-ml-1{margin-left:-0.25rem}.mr-3{margin-right:0.75rem}.mt-3{margin-top:0.75rem}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-8{height:2rem}.min-h-\[250px\]{min-height:250px}.w-full{width:100%}.w-8{width:2rem}.max-w-4xl{max-width:56rem}.max-w-sm{max-width:24rem}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.cursor-pointer{cursor:pointer}.cursor-default{cursor:default}.select-none{-webkit-user-select:none;user-select:none}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-4{gap:1rem}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-4 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem * var(--tw-space-x-reverse));margin-left:calc(1rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-6 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1.5rem * var(--tw-space-x-reverse));margin-left:calc(1.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border-2{border-width:2px}.border-t{border-top-width:1px}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-green-600{--tw-border-opacity:1;border-color:rgb(5 150 105 / var(--tw-border-opacity, 1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-gray-900{--tw-bg-opacity:1;background-color:rgb(17 24 39 / var(--tw-bg-opacity, 1))}.bg-primary{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-secondary{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(22 163 74 / var(--tw-bg-opacity, 1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-opacity-75{--tw-bg-opacity:0.75}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.pt-4{padding-top:1rem}.text-center{text-align:center}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-primary{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-secondary{--tw-text-opacity:1;color:rgb(16 185 129 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.opacity-25{opacity:0.25}.opacity-75{opacity:0.75}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.duration-500{transition-duration:500ms}.hover\:border-primary:hover{--tw-border-opacity:1;border-color:rgb(79 70 229 / var(--tw-border-opacity, 1))}.hover\:bg-emerald-600:hover{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-300:hover{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-700:hover{--tw-bg-opacity:1;background-color:rgb(67 56 202 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-50:hover{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}@media (min-width: 768px){.md\:flex-row{flex-direction:row}}@media (min-width: 1024px){.lg\:gap-8{gap:2rem}}</style>
+</head>
+<body class="bg-gray-50">
+<div id="app" class="w-full max-w-4xl p-6 bg-white shadow-xl rounded-xl">
+    <h1 class="text-3xl font-bold text-center text-primary mb-4">
+        Word Ascent!!!
+    </h1>
+    <p class="text-center text-gray-600 mb-6">
+        Match the words on the left with their correct Synonym or Antonym on the right! (5 pairs per set)
+    </p>
+
+    <div class="mb-4">
+        <h3 class="text-lg font-semibold text-gray-700 mb-2 text-center">Select Difficulty:</h3>
+        <div class="flex space-x-3 justify-center">
+            <button id="level-beginner" data-level="beginner" class="level-btn px-4 py-2 rounded-lg font-medium shadow-md transition-all duration-200 bg-primary text-white hover:bg-indigo-700">
+                Foundational Words
+            </button>
+            <button id="level-intermediate" data-level="intermediate" class="level-btn px-4 py-2 rounded-lg font-medium shadow-md transition-all duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Challenger
+            </button>
+            <button id="level-advanced" data-level="advanced" class="level-btn px-4 py-2 rounded-lg font-medium shadow-md transition-all duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Master Linguist
+            </button>
+        </div>
+    </div>
+
+    <div class="border-t pt-4 border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+        <div class="flex space-x-4 justify-center">
+            <button id="synonym-mode" data-mode="synonyms" class="mode-btn px-6 py-2 rounded-lg font-medium shadow-md transition-all duration-200 bg-primary text-white hover:bg-indigo-700">
+                Synonyms
+            </button>
+            <button id="antonym-mode" data-mode="antonyms" class="mode-btn px-6 py-2 rounded-lg font-medium shadow-md transition-all duration-200 bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Antonyms
+            </button>
+        </div>
+        <div class="flex items-center space-x-6 text-lg font-semibold">
+            <div class="text-gray-700">Score: <span id="score" class="text-primary">0</span></div>
+            <button id="restart-btn" class="px-4 py-2 bg-secondary text-white rounded-lg shadow-md hover:bg-emerald-600 transition-all duration-200">
+                New Set
+            </button>
+        </div>
+    </div>
+    
+    <div id="game-board" class="grid grid-cols-2 gap-4 lg:gap-8 min-h-[250px] items-center">
+        </div>
+
+    <div id="feedback-toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 p-4 rounded-lg shadow-2xl font-semibold text-white transition-opacity duration-500 opacity-0 pointer-events-none z-50">
+    </div>
+
+    <div id="complete-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm text-center">
+            <h2 class="text-3xl font-bold text-secondary mb-4">Set Complete!</h2>
+            <p class="text-xl text-gray-700 mb-6">Final Score: <span id="final-score" class="text-primary font-extrabold">0</span></p>
+            <button id="close-modal-btn" class="px-8 py-3 bg-primary text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-all duration-200">
+                Start Next Set
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Game Data: Organized by Level ---
+    const WORD_PAIRS_BY_LEVEL = {
+        'beginner': [
+            { word: "Happy", synonym: "Joyful", antonym: "Sad" },
+            { word: "Big", synonym: "Large", antonym: "Small" },
+            { word: "Quick", synonym: "Rapid", antonym: "Slow" },
+            { word: "Brave", synonym: "Courageous", antonym: "Cowardly" },
+            { word: "Silent", synonym: "Quiet", antonym: "Loud" },
+            { word: "Start", synonym: "Begin", antonym: "End" },
+            { word: "Rich", synonym: "Wealthy", antonym: "Poor" },
+            { word: "Easy", synonym: "Simple", antonym: "Difficult" },
+            { word: "Smart", synonym: "Intelligent", antonym: "Dull" },
+            { word: "Tiny", synonym: "Minute", antonym: "Huge" }
+        ],
+        'intermediate': [
+            { word: "Vast", synonym: "Immense", antonym: "Limited" },
+            { word: "Frigid", synonym: "Icy", antonym: "Torrid" },
+            { word: "Ponder", synonym: "Reflect", antonym: "Dismiss" },
+            { word: "Genuine", synonym: "Authentic", antonym: "Fake" },
+            { word: "Exhausted", synonym: "Weary", antonym: "Energized" },
+            { word: "Stunning", synonym: "Magnificent", antonym: "Ordinary" },
+            { word: "Obscure", synonym: "Vague", antonym: "Clear" },
+            { word: "Abundant", synonym: "Plentiful", antonym: "Scarce" },
+            { word: "Conceal", synonym: "Hide", antonym: "Reveal" },
+            { word: "Succeed", synonym: "Triumph", antonym: "Fail" }
+        ],
+        'advanced': [
+            { word: "Ephemeral", synonym: "Fleeting", antonym: "Permanent" },
+            { word: "Ubiquitous", synonym: "Pervasive", antonym: "Rare" },
+            { word: "Mellifluous", synonym: "Harmonious", antonym: "Dissonant" },
+            { word: "Cajole", synonym: "Coax", antonym: "Dissuade" },
+            { word: "Meticulous", synonym: "Diligent", antonym: "Careless" },
+            { word: "Capricious", synonym: "Fickle", antonym: "Steady" },
+            { word: "Malign", synonym: "Slander", antonym: "Praise" },
+            { word: "Voracious", synonym: "Insatiable", antonym: "Sated" },
+            { word: "Ostentatious", synonym: "Showy", antonym: "Modest" },
+            { word: "Axiomatic", synonym: "Self-evident", antonym: "Questionable" }
+        ]
+    };
+
+    const SET_SIZE = 5; // Number of questions per set
+    const LOADING_DELAY_MS = 2500; // 2.5 second delay for loading
+
+    // --- State Variables ---
+    let gameMode = 'synonyms'; // 'synonyms' or 'antonyms'
+    let gameLevel = 'beginner'; // 'beginner', 'intermediate', or 'advanced'
+    let currentSetPairs = []; // Stores the 5 random pairs for the current set
+    let selectedWord = null; // { word: string, element: HTMLElement, type: 'left' | 'right' }
+    let matchesMade = 0;
+    let score = 0;
+
+    // --- DOM Elements ---
+    const gameBoard = document.getElementById('game-board');
+    const scoreDisplay = document.getElementById('score');
+    const feedbackToast = document.getElementById('feedback-toast');
+    const completeModal = document.getElementById('complete-modal');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    const levelButtons = document.querySelectorAll('.level-btn');
+
+    // --- Utility Functions ---
+    /**
+     * Shuffles an array in place using the Fisher-Yates algorithm.
+     * @param {Array} array
+     */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    /**
+     * Shows a temporary feedback toast for success or error.
+     * @param {string} message The message to display.
+     * @param {'success' | 'error'} type The type of feedback.
+     */
+    function showToast(message, type) {
+        feedbackToast.textContent = message;
+        feedbackToast.classList.remove('opacity-0', 'bg-secondary', 'bg-red-500', 'hidden');
+
+        if (type === 'success') {
+            feedbackToast.classList.add('bg-secondary');
+        } else {
+            feedbackToast.classList.add('bg-red-500');
+        }
+
+        feedbackToast.classList.add('opacity-100');
+
+        setTimeout(() => {
+            feedbackToast.classList.remove('opacity-100');
+            feedbackToast.classList.add('opacity-0');
+            setTimeout(() => {
+                feedbackToast.classList.add('hidden');
+            }, 500); // Wait for transition to finish
+        }, 1500);
+    }
+
+    /**
+     * Displays a temporary loading message on the game board.
+     */
+    function showLoadingScreen() {
+        gameBoard.innerHTML = `
+            <div class="col-span-2 text-center py-10 flex flex-col items-center justify-center">
+                <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <div class="text-xl font-bold text-gray-500 mt-3">
+                    Loading Questions...
+                </div>
+            </div>
+        `;
+        // Deselect any card while loading
+        if (selectedWord) {
+             selectedWord.element.classList.remove('bg-primary', 'text-white', 'border-primary', 'scale-105', 'shadow-lg');
+            selectedWord = null;
+        }
+    }
+
+    // --- Game Logic ---
+    /**
+     * Executes the core game logic: selects words, shuffles, and renders the board.
+     * This function is called AFTER the loading delay.
+     */
+    function loadAndRenderSet() {
+        // 1. Get the word pool based on the current level
+        const wordPool = WORD_PAIRS_BY_LEVEL[gameLevel] || WORD_PAIRS_BY_LEVEL['beginner'];
+
+        // 2. Select 5 random, unique pairs for this set
+        const shuffledPairs = [...wordPool];
+        shuffleArray(shuffledPairs);
+        // Ensure we don't try to slice more than are available (safety check)
+        const numPairs = Math.min(SET_SIZE, shuffledPairs.length);
+        currentSetPairs = shuffledPairs.slice(0, numPairs);
+
+        // 3. Prepare words for the current set/mode
+        const leftWords = currentSetPairs.map(p => p.word);
+        const rightWords = currentSetPairs.map(p => ({
+            text: gameMode === 'synonyms' ? p.synonym : p.antonym,
+            match: p.word
+        }));
+
+        // 4. Shuffle the columns
+        shuffleArray(leftWords);
+        shuffleArray(rightWords);
+
+        // 5. Render the game board
+        gameBoard.innerHTML = ''; // Clear the loading screen
+        renderBoard(leftWords, rightWords);
+    }
+
+    /**
+     * Initializes a new set/game. Resets score and introduces a loading delay.
+     */
+    function initializeGame() {
+        // Reset necessary state
+        selectedWord = null;
+        matchesMade = 0;
+        score = 0; // Reset score for a new set
+        updateScore(0);
+        completeModal.classList.add('hidden');
+
+        // Show loading screen immediately
+        showLoadingScreen();
+
+        // Introduce the delay before loading and rendering the questions
+        setTimeout(() => {
+            loadAndRenderSet();
+        }, LOADING_DELAY_MS);
+    }
+
+    /**
+     * Starts a brand new set without resetting the score (called from modal/restart).
+     */
+    function startNewSet() {
+        // Reset set-specific state, but keep the score
+        selectedWord = null;
+        matchesMade = 0;
+        completeModal.classList.add('hidden');
+
+        // Show loading screen immediately
+        showLoadingScreen();
+
+        // Introduce the delay before loading and rendering the questions
+        setTimeout(() => {
+            loadAndRenderSet();
+        }, LOADING_DELAY_MS);
+    }
+
+    /**
+     * Renders the word cards on the game board.
+     * @param {string[]} leftWords Array of words for the left column.
+     * @param {{text: string, match: string}[]} rightWords Array of word objects for the right column.
+     */
+    function renderBoard(leftWords, rightWords) {
+        const leftColumn = document.createElement('div');
+        const rightColumn = document.createElement('div');
+        leftColumn.className = 'flex flex-col space-y-4';
+        rightColumn.className = 'flex flex-col space-y-4';
+
+        leftWords.forEach(word => {
+            leftColumn.appendChild(createWordCard(word, 'left'));
+        });
+
+        rightWords.forEach(wordObj => {
+            rightColumn.appendChild(createWordCard(wordObj.text, 'right', wordObj.match));
+        });
+
+        gameBoard.appendChild(leftColumn);
+        gameBoard.appendChild(rightColumn);
+    }
+
+    /**
+     * Creates a clickable word card element.
+     * @param {string} text The text to display.
+     * @param {'left' | 'right'} type Column type.
+     * @param {string} [matchWord] The word this card matches (only for right column).
+     * @returns {HTMLElement} The word card element.
+     */
+    function createWordCard(text, type, matchWord = null) {
+        const card = document.createElement('div');
+        card.textContent = text;
+        card.className = `word-card p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200
+                              text-gray-800 font-medium text-center border-2 border-gray-200
+                              hover:bg-indigo-50 hover:border-primary select-none`;
+        card.dataset.word = text;
+        card.dataset.type = type;
+        if (matchWord) {
+            card.dataset.match = matchWord;
+        }
+        card.addEventListener('click', handleCardClick);
+        return card;
+    }
+
+    /**
+     * Updates the displayed score.
+     * @param {number} newScore
+     */
+    function updateScore(newScore) {
+        score = newScore;
+        scoreDisplay.textContent = score;
+    }
+
+    /**
+     * Handles the click event on a word card.
+     * @param {MouseEvent} event
+     */
+    function handleCardClick(event) {
+        const card = event.currentTarget;
+        const cardWord = card.dataset.word;
+        const cardType = card.dataset.type;
+
+        // Ignore clicks on already matched cards
+        if (card.classList.contains('matched')) {
+            return;
+        }
+
+        // Define classes for selection feedback
+        const selectionClasses = ['bg-primary', 'text-white', 'border-primary', 'scale-105', 'shadow-lg'];
+
+        // 1. If no word is selected
+        if (!selectedWord) {
+            // Select the current word
+            selectedWord = { word: cardWord, element: card, type: cardType };
+            card.classList.add(...selectionClasses);
+            return;
+        }
+
+        // 2. If the same word is clicked again (deselect)
+        if (selectedWord.element === card) {
+            card.classList.remove(...selectionClasses);
+            selectedWord = null;
+            return;
+        }
+
+        // 3. If a word from the same column is clicked (change selection)
+        if (selectedWord.type === cardType) {
+            // Deselect the old one
+            selectedWord.element.classList.remove(...selectionClasses);
+            // Select the new one
+            selectedWord = { word: cardWord, element: card, type: cardType };
+            card.classList.add(...selectionClasses);
+            return;
+        }
+
+        // 4. A cross-column word is clicked (Attempt Match)
+        attemptMatch(card);
+    }
+
+    /**
+     * Attempts to match the currently selected word with the clicked card.
+     * @param {HTMLElement} secondCard The newly clicked card element.
+     */
+    function attemptMatch(secondCard) {
+        const firstCard = selectedWord.element;
+
+        // Determine which card is the "main" word (left column) and which is the "match" (right column)
+        let mainWordCard, matchCard;
+        if (selectedWord.type === 'left') {
+            mainWordCard = firstCard;
+            matchCard = secondCard;
+        } else { // selectedWord.type === 'right'
+            mainWordCard = secondCard;
+            matchCard = firstCard;
+        }
+
+        // Find the match for the main word using the current set's pairs
+        const pair = currentSetPairs.find(p => p.word === mainWordCard.dataset.word);
+        let correctMatchText = gameMode === 'synonyms' ? pair.synonym : pair.antonym;
+        
+        // Remove selection classes from the first card (always a good idea before matching feedback)
+        firstCard.classList.remove('bg-primary', 'text-white', 'border-primary', 'scale-105', 'shadow-lg');
+
+        // Check if the match is correct
+        if (matchCard.dataset.word === correctMatchText) {
+            // Correct Match!
+            updateScore(score + 10);
+            matchesMade++;
+
+            // Apply 'matched' styles with GREEN color permanently
+            [firstCard, secondCard].forEach(card => {
+                // Remove hover classes for cleanliness
+                card.classList.remove('hover:bg-indigo-50', 'hover:border-primary'); 
+                
+                // Add GREEN success styles (bg-green-500, border-green-600) and flag as matched
+                card.classList.add('bg-green-500', 'text-white', 'border-green-600', 'matched', 'cursor-default');
+                card.removeEventListener('click', handleCardClick);
+            });
+
+            showToast('Correct Match! +10 Points', 'success');
+
+        } else {
+            // Incorrect Match
+            updateScore(Math.max(0, score - 5)); // Deduct 5 points, minimum score 0
+
+            // Flash red for error feedback
+            secondCard.classList.remove('bg-primary', 'text-white', 'border-primary', 'scale-105', 'shadow-lg');
+            secondCard.classList.add('bg-red-500', 'text-white', 'border-red-600', 'shadow-xl', 'scale-105');
+            firstCard.classList.add('bg-red-500', 'text-white', 'border-red-600', 'shadow-xl', 'scale-105');
+
+
+            showToast('Incorrect Match! -5 Points', 'error');
+
+            // Revert error flash after a short delay
+            setTimeout(() => {
+                [firstCard, secondCard].forEach(card => {
+                    // Remove error classes
+                    card.classList.remove('bg-red-500', 'text-white', 'border-red-600', 'shadow-xl', 'scale-105');
+
+                    // Re-apply default non-selected appearance
+                    card.classList.add('bg-white', 'text-gray-800', 'border-gray-200');
+                });
+            }, 500);
+        }
+
+        // Clear the selection after attempting the match
+        selectedWord = null;
+
+        // Check for game set completion
+        if (matchesMade === SET_SIZE) {
+            endSet();
+        }
+    }
+
+    /**
+     * Displays the "Set Complete" modal.
+     */
+    function endSet() {
+        finalScoreDisplay.textContent = score;
+        completeModal.classList.remove('hidden');
+    }
+
+
+    // --- Event Listeners and Initialization ---
+
+    // Level Button Handler
+    levelButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            const newLevel = event.currentTarget.dataset.level;
+
+            // Update styling for all level buttons
+            levelButtons.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white', 'hover:bg-indigo-700');
+                btn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+            });
+
+            // Apply selected style to the clicked button
+            event.currentTarget.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+            event.currentTarget.classList.add('bg-primary', 'text-white', 'hover:bg-indigo-700');
+
+            if (newLevel !== gameLevel) {
+                gameLevel = newLevel;
+                // Start a new set when difficulty changes
+                startNewSet();
+            }
+        });
+    });
+
+    // Mode Button Handler
+    modeButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            const newMode = event.currentTarget.dataset.mode;
+
+            // Update styling for all mode buttons
+            modeButtons.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white', 'hover:bg-indigo-700');
+                btn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+            });
+
+            // Apply selected style to the clicked button
+            event.currentTarget.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+            event.currentTarget.classList.add('bg-primary', 'text-white', 'hover:bg-indigo-700');
+
+            if (newMode !== gameMode) {
+                gameMode = newMode;
+                // Start a new set when mode changes
+                startNewSet();
+            }
+        });
+    });
+
+    // Restart/New Set Button
+    document.getElementById('restart-btn').addEventListener('click', startNewSet);
+
+    // Modal Close/Next Set Button
+    document.getElementById('close-modal-btn').addEventListener('click', startNewSet);
+
+    // Start the game!
+    initializeGame();
+
+</script>
+</body>
+</html>
