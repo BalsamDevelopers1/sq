@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,9 +13,11 @@
             background-color: #f0f4f8;
             color: #1a202c;
             display: flex;
+            flex-direction: column; /* Changed to column to stack container and footer */
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 20px; /* Added padding for space around the page */
         }
         .container {
             background: #ffffff;
@@ -23,6 +26,7 @@
             padding: 2rem;
             max-width: 90vw;
             width: 500px;
+            margin-bottom: 1rem; /* Space between container and new footer */
         }
         .number-display {
             background-color: #3b82f6;
@@ -79,11 +83,9 @@
     </style>
 </head>
 <body>
-
 <div class="container text-center">
     <h1 class="text-4xl font-bold mb-6 text-rainbow-800">
     Bingo Blitz</h1>
-
     <div id="scoreDisplay" class="text-xl font-semibold mb-2 text-gray-600">Score: 0</div>
     <div id="numberDisplay" class="number-display">
         <span class="text-2xl">?</span>
@@ -97,15 +99,16 @@
     <button id="resetBtn" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg text-lg mb-6 transition-all duration-200 ease-in-out hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 hidden">
         Reset Game
     </button>
-    
-    <hr class="my-6 border-gray-300">
-    
-    <div class="mb-4">
+        <hr class="my-6 border-gray-300">
+        <div class="mb-4">
         <h2 class="text-2xl font-bold mb-2 text-gray-700">Called Numbers</h2>
         <div id="calledNumbersList" class="called-numbers-grid">
-            <!-- Numbers will be inserted here by JavaScript -->
-        </div>
+            </div>
     </div>
+</div>
+
+<div class="text-sm text-gray-500 mt-4">
+    Developed By **Sharran**
 </div>
 
 <script>
@@ -239,14 +242,23 @@
 
                 const randomIndex = Math.floor(Math.random() * numbersPool.length);
                 currentNumberToCall = numbersPool.splice(randomIndex, 1)[0];
-                
-                questionDisplay.textContent = generateQuizQuestion(currentNumberToCall);
+
+                // Ensure LaTeX is correctly formatted for display in HTML, if necessary.
+                // The original code uses a placeholder for LaTeX that won't render directly,
+                // but we will keep the original structure for compatibility.
+                const questionText = generateQuizQuestion(currentNumberToCall).replace(/\$([^\$]*)\$/g, (match, p1) => {
+                    // Simple replacement for atomic numbers like C, F, Al, etc., to make them bold.
+                    return `**${p1.trim()}**`;
+                });
+                questionDisplay.innerHTML = questionText;
+
                 callNumberBtn.textContent = 'Reveal Answer';
                 isQuestionStage = false;
-                
+
             } else {
                 calledNumbers.push(currentNumberToCall);
-                
+
+                // Scoring Logic: +10 points if number is between 31 and 45 (inclusive)
                 if (currentNumberToCall >= 31 && currentNumberToCall <= 45) {
                     score += 10;
                     scoreDisplay.textContent = 'Score: ' + score;
@@ -254,14 +266,14 @@
 
                 numberDisplay.classList.remove('called');
                 numberDisplay.innerHTML = `<span>${currentNumberToCall}</span>`;
-                void numberDisplay.offsetWidth; 
+                void numberDisplay.offsetWidth; // Trigger reflow for animation
                 numberDisplay.classList.add('called');
 
                 const numberItem = document.createElement('div');
                 numberItem.classList.add('called-number-item');
                 numberItem.textContent = currentNumberToCall;
                 calledNumbersList.appendChild(numberItem);
-                
+
                 calledNumbersList.scrollTop = calledNumbersList.scrollHeight;
 
                 questionDisplay.textContent = '';
@@ -272,10 +284,9 @@
 
         callNumberBtn.addEventListener('click', processCall);
         resetBtn.addEventListener('click', resetGame);
-        
+
         resetGame();
     });
 </script>
-
 </body>
 </html>
