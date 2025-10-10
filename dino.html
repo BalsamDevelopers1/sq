@@ -4,18 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate Dino Quiz - Start Page</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Roboto:wght@500&display=swap" rel="stylesheet">
-
+        <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Roboto:wght@500&display=swap" rel="stylesheet">
     <style>
         /* CSS STYLING: Prehistoric Jungle Theme */
         body {
             /* Guaranteed Jungle Gradient Background */
             background: linear-gradient(135deg, #1A521A 0%, #4B5320 50%, #7C986C 100%);
             background-attachment: fixed;
-            
-            font-family: 'Roboto', sans-serif; 
+            font-family: 'Roboto', sans-serif;
             display: flex;
+            flex-direction: column; /* Changed to column to stack quiz-container and footer */
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -24,21 +22,21 @@
         }
         .quiz-container {
             /* RUSTIC QUIZ BOX */
-            background-color: rgba(255, 255, 255, 0.95); 
+            background-color: rgba(255, 255, 255, 0.95);
             padding: 30px;
             border-radius: 15px;
-            border: 4px solid #3CB371; 
+            border: 4px solid #3CB371;
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
             width: 90%;
             max-width: 500px;
             text-align: center;
         }
         h1 {
-            color: #228B22; 
-            font-family: 'Caveat', cursive; 
+            color: #228B22;
+            font-family: 'Caveat', cursive;
             font-size: 2.5em;
             margin-bottom: 20px;
-            border-bottom: 3px dashed #3CB371; 
+            border-bottom: 3px dashed #3CB371;
             padding-bottom: 10px;
         }
         #question-counter {
@@ -50,18 +48,18 @@
         #question-text {
             font-size: 1.3em;
             margin-bottom: 25px;
-            color: #4B5320; 
+            color: #4B5320;
             font-weight: bold;
         }
         .options-container {
             display: flex;
             flex-direction: column;
-            gap: 12px; 
-        }
+            gap: 12px;
+         }
         .option-btn {
-            background-color: #ADD8E6; 
+            background-color: #ADD8E6;
             color: #1e1e1e;
-            border: 2px solid #228B22; 
+            border: 2px solid #228B22;
             padding: 12px;
             border-radius: 8px;
             font-size: 1.1em;
@@ -74,7 +72,7 @@
             transform: scale(1.02);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-        
+
         /* Feedback Colors & Selected Answer */
         .selected {
             background-color: #008080 !important; /* Teal for selected */
@@ -82,12 +80,12 @@
             border-color: #004d4d !important;
         }
         .correct {
-            background-color: #32CD32 !important; 
+            background-color: #32CD32 !important;
             color: white !important;
             border-color: #006400 !important;
         }
         .incorrect {
-            background-color: #DC143C !important; 
+            background-color: #DC143C !important;
             color: white !important;
             border-color: #8B0000 !important;
         }
@@ -116,7 +114,7 @@
         .nav-btn:hover:not(:disabled) {
             background-color: #006666;
         }
-        
+
         /* Final Score and Restart */
         #result {
             font-size: 1.6em;
@@ -139,17 +137,25 @@
         #restart-btn:hover {
             background-color: #E57900;
         }
+
+        /* NEW FOOTER STYLE */
+        .quiz-footer {
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7); /* Light white for contrast on the green background */
+            font-size: 0.9em;
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-
     <div class="quiz-container" id="welcome-screen">
         <h1>🦖 Welcome to the Ultimate Dino Quiz! 🦕</h1>
         <p style="font-size: 1.2em; color: #4B5320; margin: 20px 0;">
             Test your knowledge of the Mesozoic Era with 4 challenging questions.
         </p>
-        <button id="start-game-btn" onclick="showQuiz()" 
-            style="margin-top: 30px; background-color: #FF8C00; color: white; padding: 15px 30px; 
+        <button id="start-game-btn" onclick="showQuiz()"
+            style="margin-top: 30px; background-color: #FF8C00; color: white; padding: 15px 30px;
                    border: 2px solid #CC7000; border-radius: 5px; font-size: 1.5em; cursor: pointer;
                    transition: background-color 0.2s;">
             Begin the Jurassic Adventure!
@@ -158,26 +164,24 @@
 
     <div class="quiz-container" id="main-quiz" style="display: none;">
         <h1>🦕 Ultimate Dino Quiz 🦖</h1>
-        
         <p id="question-counter">Question 1/4</p>
         <p id="question-text">Question will appear here.</p>
-        
         <div class="options-container" id="options-container">
         </div>
-
         <div id="result">Score: 0</div>
-        
         <div class="nav-container">
             <button class="nav-btn" id="prev-btn" onclick="navigateQuestion(-1)">Previous</button>
             <button class="nav-btn" id="next-btn" onclick="navigateQuestion(1)">Next</button>
         </div>
-        
         <button id="restart-btn" onclick="startQuiz()">Explore Again!</button>
     </div>
 
+    <footer class="quiz-footer">
+        Developed By Sharran (G7A)
+    </footer>
+
     <script>
         // JAVASCRIPT LOGIC
-
         // 1. QUIZ DATA
         const quizData = [
             {
@@ -203,7 +207,7 @@
         ];
 
         // 2. STATE VARIABLES
-        let userAnswers = []; 
+        let userAnswers = [];
         let currentQuestionIndex = 0;
         let score = 0;
 
@@ -219,9 +223,8 @@
         const nextBtn = document.getElementById('next-btn');
         const navContainer = document.querySelector('.nav-container');
 
-
         // 4. NAVIGATION FUNCTIONS
-        
+
         // Function to switch from Welcome Screen to Quiz with a Loading Delay
         function showQuiz() {
             // 1. Hide the welcome screen and show the main quiz container
@@ -231,13 +234,13 @@
             // 2. Set the content to the "Loading" state
             questionCounterEl.textContent = 'Preparing Expedition...';
             questionEl.textContent = "🦕 Fetching Live Questions ⏳";
-            optionsContainer.innerHTML = ''; 
+            optionsContainer.innerHTML = '';
             resultEl.style.display = 'none'; // Hide score during loading
             navContainer.style.display = 'none'; // Hide buttons during loading
 
             // 3. Use setTimeout to wait for 4000 milliseconds (4 seconds)
             const loadingTime = 4000; // 4 seconds
-            
+
             setTimeout(() => {
                 // After the delay, restore content visibility and start the quiz
                 resultEl.style.display = 'block';
@@ -245,7 +248,7 @@
                 startQuiz(); // Initialize and load the first question
             }, loadingTime);
         }
-        
+
         // Load the current question onto the page
         function loadQuestion() {
             // Check if we've reached the end of the quiz
@@ -253,13 +256,13 @@
                 showResults();
                 return;
             }
-            
+
             const currentQuiz = quizData[currentQuestionIndex];
-            
+
             // Update Counter and Question Text
             questionCounterEl.textContent = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
             questionEl.textContent = currentQuiz.question;
-            optionsContainer.innerHTML = ''; 
+            optionsContainer.innerHTML = '';
             resultEl.textContent = `Score: ${score}`;
 
             // Create buttons and apply saved answer (if it exists)
@@ -269,7 +272,7 @@
                 const button = document.createElement('button');
                 button.classList.add('option-btn');
                 button.textContent = option;
-                
+
                 // Apply the 'selected' class to the saved answer
                 if (savedAnswer && savedAnswer === option) {
                     button.classList.add('selected');
@@ -279,7 +282,7 @@
                 button.onclick = () => checkAnswer(option, button, currentQuiz.answer);
                 optionsContainer.appendChild(button);
             });
-            
+
             // Manage Navigation Button disabled state
             prevBtn.disabled = currentQuestionIndex === 0;
             nextBtn.textContent = (currentQuestionIndex === quizData.length - 1) ? "Submit Quiz" : "Next";
@@ -300,9 +303,8 @@
             }
         }
 
-
         // 5. ANSWER & SCORING FUNCTIONS
-        
+
         // Saves the selected answer and updates the score display
         function checkAnswer(selectedOption, button) {
             // Clear previous selected visual state from all buttons
@@ -313,11 +315,11 @@
             // Save the user's answer and visually mark it
             userAnswers[currentQuestionIndex] = selectedOption;
             button.classList.add('selected');
-            
+
             // Re-calculate score immediately after the answer changes
             calculateScore();
         }
-        
+
         // Calculate the total score based on all saved answers
         function calculateScore() {
             let newScore = 0;
@@ -330,19 +332,18 @@
             resultEl.textContent = `Score: ${score}`;
         }
 
-
         // 6. END GAME / RESTART FUNCTIONS
-        
+
         // Displays the final results screen
         function showResults() {
             calculateScore();
-            
+
             questionEl.textContent = "Adventure Complete!";
-            optionsContainer.innerHTML = ''; 
+            optionsContainer.innerHTML = '';
             questionCounterEl.textContent = 'Results';
 
             resultEl.innerHTML = `Your Final Score is: <strong>${score} out of ${quizData.length}</strong>!`;
-            
+
             // Hide navigation, show restart
             navContainer.style.display = 'none';
             restartBtn.style.display = 'block';
@@ -355,7 +356,7 @@
             userAnswers = Array(quizData.length).fill(null); // Reset user answers
             loadQuestion();
             calculateScore();
-            
+
             // Ensure visibility for restart
             welcomeScreen.style.display = 'none';
             mainQuiz.style.display = 'block';
@@ -366,6 +367,5 @@
 
         // Note: No initial call to startQuiz() is needed. The quiz starts when the user clicks the button.
     </script>
-
 </body>
 </html>
