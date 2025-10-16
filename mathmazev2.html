@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Maze Challenge (Multi-Level)</title>
+    <title>CalcQuest: The Maze Solver</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -28,7 +28,7 @@
         .game-container {
             width: 100%;
             max-width: 1200px; /* Increased max width for more cards */
-            box-shadow: 0 25px 50px -12p x rgba(0, 0, 0, 0.25);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         canvas {
             border: 4px solid var(--wall-color); 
@@ -57,9 +57,11 @@
         .control-btn:hover {
             background-color: #d1d5db; /* Gray 300 */
         }
-        #gameFooter {
+        #gameFooter, #hintBar {
             width: 100%;
             max-width: 1200px;
+        }
+        #hintBar {
             margin-top: 1rem;
         }
     </style>
@@ -70,7 +72,7 @@
         
         <!-- Header -->
         <header class="p-4 bg-indigo-700 text-white rounded-t-xl">
-            <h1 class="text-4xl font-extrabold text-center tracking-tight">🧠 The Math Maze Challenge 🚀</h1>
+            <h1 class="text-4xl font-extrabold text-center tracking-tight">🧠 CalcQuest: The Maze Solver 🗺️</h1>
             <p class="text-sm text-center opacity-80">Navigate the maze and solve equations to open the doors!</p>
         </header>
 
@@ -111,13 +113,13 @@
                 <div data-level="advanced-standard" class="level-card bg-red-600 text-white p-4 rounded-xl shadow-lg ring-4 ring-transparent hover:ring-red-800">
                     <h3 class="text-2xl font-bold mb-1">Advanced: Standard</h3>
                     <p class="text-xs opacity-90 mb-3">(51x51 Maze, 20 Doors)</p>
-                    <p class="font-normal text-sm">Large maze, first use of **Division**, and highly dense with questions.</p>
+                    <p class="font-normal text-sm">Large maze, first use of **Division**, and features **two-step equations**.</p>
                 </div>
                 
                 <div data-level="advanced-density" class="level-card bg-red-800 text-yellow-300 p-4 rounded-xl shadow-lg ring-4 ring-transparent hover:ring-red-900">
                     <h3 class="text-2xl font-bold mb-1">Advanced: Density</h3>
                     <p class="text-xs opacity-90 mb-3">(71x71 Maze, 30 Doors)</p>
-                    <p class="font-normal text-sm">A **massive maze** with maximum door count and constant complex problems.</p>
+                    <p class="font-normal text-sm">A **massive maze** with max doors, large numbers, and complex **two-step equations**.</p>
                 </div>
 
             </div>
@@ -159,7 +161,7 @@
                     </button>
                     <div class="flex space-x-2">
                         <button data-direction="left" class="control-btn w-16 h-10 rounded-lg shadow-md font-bold transform transition duration-100 hover:scale-110">
-                            &#x25C0;
+                        &#x25C0;
                         </button>
                         <button data-direction="down" class="control-btn w-16 h-10 rounded-lg shadow-md font-bold transform transition duration-100 hover:scale-110">
                             &#x25BC;
@@ -182,6 +184,11 @@
             </div>
 
         </main>
+    </div>
+
+    <!-- Hint/Callout -->
+    <div id="hintBar" class="mt-4 text-center p-3 bg-yellow-100 border-t-4 border-yellow-400 rounded-lg shadow-md">
+        <p class="text-base font-semibold text-yellow-800">Hint: Choose your maze according to your level!</p>
     </div>
 
     <!-- Footer -->
@@ -213,58 +220,58 @@
         const END = 3;
         const DOOR = 4;
         
-        // --- UPDATED LEVEL CONFIGURATION (More Doors for Advanced Levels) ---
+        // --- UPDATED LEVEL CONFIGURATION (Increased number range for difficulty) ---
         const LEVEL_CONFIG = {
             // BEGINNER TIER
             "beginner-light": {
                 MAZE_SIZE: 15, 
                 NUM_DOORS: 3,
                 MSG: "The light maze: Small size, few doors, Addition only.",
-                MAX_NUM: 10,
-                MAX_MULT: 5,
-                OPERATIONS: 1 // 0: +
+                MAX_NUM: 10,  // Max number for A+B
+                MAX_MULT: 5,  // Max factor for A*B
+                OPERATIONS: 1 // Max index of operation: 0: +
             },
             "beginner-standard": {
                 MAZE_SIZE: 21, 
                 NUM_DOORS: 5,
                 MSG: "A good starting challenge: Small maze, Add and Subtract.",
-                MAX_NUM: 15,
+                MAX_NUM: 25,
                 MAX_MULT: 5,
-                OPERATIONS: 2 // 0: +, 1: -
+                OPERATIONS: 2 // Max index of operation: 0: +, 1: -
             },
             // INTERMEDIATE TIER
             "intermediate-standard": {
                 MAZE_SIZE: 35,
                 NUM_DOORS: 10,
                 MSG: "Standard Intermediate: Introduces multiplication, balanced challenge.",
-                MAX_NUM: 40,
-                MAX_MULT: 10,
-                OPERATIONS: 3 // 0: +, 1: -, 2: *
+                MAX_NUM: 70, // Max for A+B, A-B
+                MAX_MULT: 15, // Max factor for A*B, A/B
+                OPERATIONS: 3 // Max index of operation: 0: +, 1: -, 2: *
             },
             "intermediate-mathfocus": {
                 MAZE_SIZE: 35,
                 NUM_DOORS: 15, // More doors than standard
                 MSG: "Math Focus: Same size maze but 50% more doors! Prepare to calculate.",
-                MAX_NUM: 50, // Slightly higher numbers
-                MAX_MULT: 12,
+                MAX_NUM: 100, 
+                MAX_MULT: 20,
                 OPERATIONS: 3 // 0: +, 1: -, 2: *
             },
-            // ADVANCED TIER
+            // ADVANCED TIER (High number ranges and two-step problems)
             "advanced-standard": {
                 MAZE_SIZE: 51,
-                NUM_DOORS: 20, // Increased density
-                MSG: "Standard Advanced: Large maze, first use of division, complex equations. Higher question density!",
-                MAX_NUM: 80,
-                MAX_MULT: 15,
-                OPERATIONS: 4 // 0: +, 1: -, 2: *, 3: /
+                NUM_DOORS: 20, 
+                MSG: "Standard Advanced: Large maze, complex two-step equations, and division.",
+                MAX_NUM: 150, // Max number for A+B, A-B base
+                MAX_MULT: 25, // Max factor for A*B, A/B base
+                OPERATIONS: 4 // 0: +, 1: -, 2: *, 3: / (single step is rarely used here)
             },
             "advanced-density": {
                 MAZE_SIZE: 71,
                 NUM_DOORS: 30, // Max density
-                MSG: "Density Challenge: Massive map size and maximum math problems per door!",
-                MAX_NUM: 100,
-                MAX_MULT: 20,
-                OPERATIONS: 4 // 0: +, 1: -, 2: *, 3: /
+                MSG: "Density Challenge: Massive map size, maximum complexity, and two-step equations.",
+                MAX_NUM: 200, 
+                MAX_MULT: 30,
+                OPERATIONS: 4 
             }
         };
 
@@ -289,9 +296,8 @@
             updateMessage("Choose a new challenge to begin!", 'default');
         }
 
-        // --- MAZE GENERATION LOGIC (Prim's Algorithm) ---
+        // --- MAZE GENERATION LOGIC (Prim's Algorithm - Unchanged) ---
         function generateMaze(size, numDoors) {
-            // 1. Initialize grid with walls (1)
             let grid = Array.from({ length: size }, () => Array(size).fill(WALL));
             let startY = 1, startX = 1;
             grid[startY][startX] = PATH;
@@ -387,40 +393,114 @@
             }
         }
 
+        // Helper function to find a factor for clean division
+        function getFactor(n) {
+            for (let i = 2; i * i <= n; i++) {
+                if (n % i === 0) return i;
+            }
+            return n > 1 ? n : 1; 
+        }
+
+        // --- UPDATED generateQuestion FUNCTION for difficulty scaling ---
         function generateQuestion() {
             const config = LEVEL_CONFIG[currentLevelKey];
-            const operation = Math.floor(Math.random() * config.OPERATIONS); 
+            const isAdvanced = currentLevelKey.startsWith('advanced');
             let num1, num2, answer, text;
 
-            switch (operation) {
-                case 0: // Addition
-                    num1 = Math.floor(Math.random() * config.MAX_NUM) + 1;
-                    num2 = Math.floor(Math.random() * config.MAX_NUM) + 1;
-                    answer = num1 + num2;
-                    text = `${num1} + ${num2} = ?`;
-                    break;
-                case 1: // Subtraction
-                    num1 = Math.floor(Math.random() * config.MAX_NUM) + 1;
-                    num2 = Math.floor(Math.random() * config.MAX_NUM) + 1;
-                    if (num1 < num2) [num1, num2] = [num2, num1];
-                    answer = num1 - num2;
-                    text = `${num1} - ${num2} = ?`;
-                    break;
-                case 2: // Multiplication
-                    num1 = Math.floor(Math.random() * (config.MAX_MULT - 2)) + 3;
-                    num2 = Math.floor(Math.random() * (config.MAX_MULT - 2)) + 3;
-                    answer = num1 * num2;
-                    text = `${num1} × ${num2} = ?`;
-                    break;
-                case 3: // Division
-                    let divisor = Math.floor(Math.random() * (config.MAX_MULT - 2)) + 3;
-                    answer = Math.floor(Math.random() * (config.MAX_MULT - 2)) + 3;
-                    num1 = answer * divisor;
-                    num2 = divisor;
-                    text = `${num1} ÷ ${num2} = ?`;
-                    break;
-                default:
-                    num1 = 1; num2 = 1; answer = 2; text = "1 + 1 = ?";
+            if (isAdvanced) {
+                // Two-Step Advanced Logic: (A op1 B) op2 C
+                const op1 = Math.floor(Math.random() * 3); // +, -, * for the first step
+                const op2 = Math.floor(Math.random() * 4); // +, -, *, / for the second step
+
+                // Use slightly smaller numbers for intermediate steps
+                let A = Math.floor(Math.random() * (config.MAX_NUM / 4)) + 10;
+                let B = Math.floor(Math.random() * (config.MAX_MULT / 2)) + 5;
+                let C = Math.floor(Math.random() * (config.MAX_MULT / 2)) + 5;
+                
+                let result1, text1;
+
+                // Step 1: (A op1 B)
+                switch (op1) {
+                    case 0: // Addition
+                        result1 = A + B;
+                        text1 = `(${A} + ${B})`;
+                        break;
+                    case 1: // Subtraction
+                        if (A < B) [A, B] = [B, A]; // Ensure positive
+                        result1 = A - B;
+                        text1 = `(${A} - ${B})`;
+                        break;
+                    case 2: // Multiplication
+                        result1 = A * B;
+                        text1 = `(${A} × ${B})`;
+                        break;
+                }
+
+                // Step 2: result1 op2 C
+                let finalAnswer, finalOpText;
+                
+                switch(op2) {
+                    case 0: // + C
+                        finalAnswer = result1 + C;
+                        finalOpText = ` + ${C}`;
+                        break;
+                    case 1: // - C
+                        if (result1 < C) [result1, C] = [C, result1]; // Ensure positive
+                        finalAnswer = result1 - C;
+                        finalOpText = ` - ${C}`;
+                        break;
+                    case 2: // * C
+                        finalAnswer = result1 * C;
+                        finalOpText = ` × ${C}`;
+                        break;
+                    case 3: // / C (Must ensure clean division)
+                        if (result1 < 10) { result1 = 12; C = 3; } // Default if too small
+                        let factor = getFactor(result1);
+                        C = factor > 1 ? factor : 2; // C must be a factor
+                        result1 = result1 % C === 0 ? result1 : result1 * C; // Make divisible if necessary
+
+                        finalAnswer = result1 / C;
+                        finalOpText = ` ÷ ${C}`;
+                        break;
+                }
+
+                answer = finalAnswer;
+                text = `${text1}${finalOpText} = ?`;
+
+            } else {
+                // Single-Step Logic (Beginner and Intermediate)
+                const operation = Math.floor(Math.random() * config.OPERATIONS); 
+                
+                switch (operation) {
+                    case 0: // Addition
+                        num1 = Math.floor(Math.random() * config.MAX_NUM) + 1;
+                        num2 = Math.floor(Math.random() * config.MAX_NUM) + 1;
+                        answer = num1 + num2;
+                        text = `${num1} + ${num2} = ?`;
+                        break;
+                    case 1: // Subtraction
+                        num1 = Math.floor(Math.random() * config.MAX_NUM) + 1;
+                        num2 = Math.floor(Math.random() * config.MAX_NUM) + 1;
+                        if (num1 < num2) [num1, num2] = [num2, num1];
+                        answer = num1 - num2;
+                        text = `${num1} - ${num2} = ?`;
+                        break;
+                    case 2: // Multiplication (Intermediate only)
+                        num1 = Math.floor(Math.random() * (config.MAX_MULT - 2)) + 3;
+                        num2 = Math.floor(Math.random() * (config.MAX_MULT - 2)) + 3;
+                        answer = num1 * num2;
+                        text = `${num1} × ${num2} = ?`;
+                        break;
+                    case 3: // Division (Currently unused here, but kept for completeness)
+                        let divisor = Math.floor(Math.random() * (config.MAX_MULT - 2)) + 3;
+                        answer = Math.floor(Math.random() * (config.MAX_MULT - 2)) + 3;
+                        num1 = answer * divisor;
+                        num2 = divisor;
+                        text = `${num1} ÷ ${num2} = ?`;
+                        break;
+                    default:
+                        num1 = 1; num2 = 1; answer = 2; text = "1 + 1 = ?";
+                }
             }
 
             return { text, answer };
@@ -450,7 +530,7 @@
             }
         }
 
-        // --- Drawing Logic ---
+        // --- Drawing Logic (Unchanged) ---
 
         function drawMaze() {
             canvas.width = numCols * CELL_SIZE;
@@ -515,7 +595,7 @@
             drawPlayer();
         }
 
-        // --- Game Logic ---
+        // --- Game Logic (Unchanged) ---
 
         function initializeGame(levelKey) {
             const config = LEVEL_CONFIG[levelKey];
@@ -538,7 +618,6 @@
             answerInput.value = '';
 
             // Update Level Display
-            // Format the key nicely for the display (e.g., beginner-standard -> Beginner: Standard)
             const levelNameParts = levelKey.split('-');
             const levelName = levelNameParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(': ');
 
@@ -596,14 +675,18 @@
         function handleSubmit() {
             if (!isBlocked || !currentQuestion) return;
 
+            // Use Math.round for advanced division problems which might result in floats, though we try to ensure integers
             const userAnswer = parseInt(answerInput.value, 10);
             
             if (isNaN(userAnswer)) {
                 updateMessage("Please enter a valid number.", 'error');
                 return;
             }
+            
+            // Check if the difference is negligible for division problems
+            const isCorrect = userAnswer === currentQuestion.answer; 
 
-            if (userAnswer === currentQuestion.answer) {
+            if (isCorrect) {
                 isBlocked = false;
                 mathQuestionArea.classList.add('hidden');
                 updateMessage("Correct! The door is now open. You can move again.", 'success');
@@ -632,10 +715,10 @@
             }
         }
 
-        // --- Event Listeners and Setup ---
+        // --- Event Listeners and Setup (Unchanged) ---
 
         document.addEventListener('keydown', (e) => {
-            if (currentLevelKey === null) return; // Ignore input on selection screen
+            if (currentLevelKey === null) return; 
 
             if (isBlocked && e.key === 'Enter') {
                 handleSubmit();
@@ -667,7 +750,6 @@
             });
         });
 
-        // Use the new startGame function for level selection
         levelButtons.forEach(card => {
             card.addEventListener('click', () => {
                 const level = card.getAttribute('data-level');
@@ -692,19 +774,15 @@
         function handleResize() {
             if (!numCols || gameScreen.classList.contains('hidden')) return;
 
-            // Get the width of the canvas container
             const gameCanvasContainer = document.querySelector('.md\\:w-3\\/5');
-            // Safely get clientWidth, default to 500 if container not found (shouldn't happen here)
             const containerWidth = gameCanvasContainer ? gameCanvasContainer.clientWidth : 500; 
             
             const mazeDim = numCols; 
             
-            // Calculate new cell size based on container width
             const newCellSize = Math.floor((containerWidth - 8) / mazeDim); 
             
-            // Define reasonable min/max cell sizes for different maze densities
             let minCell = 8;
-            let maxCell = (mazeDim <= 25) ? 20 : 15; // Smaller mazes can have bigger cells
+            let maxCell = (mazeDim <= 25) ? 20 : 15;
 
             CELL_SIZE = Math.min(Math.max(newCellSize, minCell), maxCell); 
 
