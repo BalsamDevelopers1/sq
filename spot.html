@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spot the Difference Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #game-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px auto;
+        }
+
+        .image-wrapper {
+            position: relative;
+            cursor: crosshair; /* Use a clear cursor */
+            border: 3px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px; /* IMPORTANT: Set to your image width */
+            height: 300px; /* IMPORTANT: Set to your image height */
+            /* Add overflow: hidden if your images are larger than the set size */
+        }
+
+        .game-image {
+            display: block;
+            width: 100%; 
+            height: 100%;
+        }
+
+        .found-marker {
+            position: absolute;
+            border: 4px solid #2ecc71; /* Green color */
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+            box-sizing: border-box; /* Include padding/border in size */
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .correct {
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Find the Differences!</h1>
+
+    <div id="game-container">
+        <div class="image-wrapper" id="image1">
+            <img src="game_image_original.jpg" class="game-image" alt="Original Image">
+        </div>
+
+        <div class="image-wrapper" id="image2">
+            https://en.wikipedia.org/wiki/Photo_Hunt#/media/File:Photo_Hunt_screen_shot.jpg" class="game-image" alt="Modified Image">
+        </div>
+    </div>
+
+    <p id="message">Differences found: <span id="found-count">0</span> / <span id="total-count">0</span></p>
+    
+    <p id="coords-display" style="font-size: 0.9em; color: #555;"></p>
+
+    <script>
+        // =========================================================================
+        // STEP 1: DEFINE YOUR DIFFERENCES HERE (The x, y, width, and height of the difference)
+        // You MUST update these coordinates using the built-in coordinate finder tool!
+        // =========================================================================
+        const DIFFERENCES = [
+            // Example 1: A small difference region
+            { x: 100, y: 50, width: 30, height: 30, found: false },
+            // Example 2: A larger, rectangular difference region
+            { x: 320, y: 180, width: 50, height: 40, found: false },
+            // Example 3: You can add as many as you want
+            { x: 20, y: 250, width: 60, height: 25, found: false }
+        ];
+
+        const TOTAL_DIFFERENCES = DIFFERENCES.length;
+        let foundCount = 0;
+
+        const countDisplay = document.getElementById('found-count');
+        const totalCountDisplay = document.getElementById('total-count');
+        const messageDisplay = document.getElementById('message');
+        const coordsDisplay = document.getElementById('coords-display');
+        
+        // Update the total count display
+        totalCountDisplay.textContent = TOTAL_DIFFERENCES;
+
+
+        // =========================================================================
+        // STEP 2: GAME AND TOOL INITIALIZATION
+        // =========================================================================
+        document.querySelectorAll('.image-wrapper').forEach(wrapper => {
+            // Attach BOTH the game logic AND the coordinate tool
+            wrapper.addEventListener('click', handleImageClick);
+            wrapper.addEventListener('click', getCoords); 
+        });
+
+        // =========================================================================
+        // COORDINATE FINDER TOOL (TEMPORARY USE)
+        // Click on the image to see the X/Y coordinates in the coords-display element.
+        // Once you've set your DIFFERENCES array, you can remove this function.
+        // =========================================================================
+        function getCoords(event) {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const clickX = Math.round(event.clientX - rect.left); 
+            const clickY = Math.round(event.clientY - rect.top);
+            
+            coordsDisplay.innerHTML = `
+                **X: ${clickX}, Y: ${clickY}** | 
+                <span style="color: #c0392b;">Use this to set your differences in the code!</span>
+            `;
+        }
+
+
+        // =========================================================================
+        // CORE GAME LOGIC
+        // =========================================================================
+        function handleImageClick(event) {
+            if (foundCount === TOTAL_DIFFERENCES) return;
+
+            const rect = event.currentTarget.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+
+            let isCorrectClick = false;
+            
+            for (let i = 0; i < DIFFERENCES.length; i++) {
+                const diff = DIFFERENCES[i];
+
+                if (!diff.found) {
+                    // Check if click coordinates are within the difference bounding box
+                    if (clickX >= diff.x && clickX <= diff.x + diff.width &&
+                        clickY >= diff.y && clickY <= diff.y + diff.height) {
+                        
+                        // Correct Difference Found!
+                        DIFFERENCES[i].found = true;
+                        isCorrectClick = true;
+                        foundCount++;
+                        
+                        // Mark the difference on BOTH images
+                        markDifferenceFound(diff);
+                        break; 
+                    }
+                }
+            }
+
+            // --- Feedback ---
+            if (isCorrectClick) {
+                messageDisplay.textContent = 'Found one!';
+                messageDisplay.classList.add('correct');
+                countDisplay.textContent = foundCount;
+
+                if (foundCount === TOTAL_DIFFERENCES) {
+                    messageDisplay.textContent = 'CONGRATULATIONS! You found all the differences!';
+                    messageDisplay.classList.add('correct');
+                    // Stop listening for clicks once the game is over
+                    document.querySelectorAll('.image-wrapper').forEach(wrapper => {
+                        wrapper.removeEventListener('click', handleImageClick);
+                    });
+                }
+
+            } else {
+                messageDisplay.textContent = 'Oops! No difference there.';
+                messageDisplay.classList.remove('correct');
+            }
+        }
+
+        // --- Visual Marker Function ---
+        function markDifferenceFound(diff) {
+            const marker = document.createElement('div');
+            marker.className = 'found-marker';
+            
+            // Position the marker
+            marker.style.left = `${diff.x}px`;
+            marker.style.top = `${diff.y}px`;
+            marker.style.width = `${diff.width}px`;
+            marker.style.height = `${diff.height}px`;
+
+            // Append the marker to BOTH image wrappers
+            document.getElementById('image1').appendChild(marker.cloneNode(true));
+            document.getElementById('image2').appendChild(marker.cloneNode(true));
+        }
+    </script>
+
+</body>
+</html>
