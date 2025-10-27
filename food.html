@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Chain Survivor</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the game area */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Dark background */
+        }
+        #gameCanvas {
+            background-color: #a7f3d0; /* Light green for the field */
+            cursor: pointer;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5);
+            touch-action: none; /* Prevent default touch scrolling/actions on canvas */
+        }
+        .message-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 4px solid #10b981; /* Emerald green */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+        #puzzleAnswerInput {
+            -webkit-appearance: none; /* Remove spinners for number input */
+            margin: 0;
+            font-family: inherit; /* Inherit font from body */
+        }
+        /* Custom styles for the control buttons */
+        .control-button {
+            /* Tailored style for on-screen controls */
+            background-color: #374151; /* gray-700 */
+            color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.1s;
+            /* INCREASED FONT SIZE for better touch feedback */
+            font-size: 2rem; 
+            line-height: 1;
+            font-weight: 900;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        .control-button:active {
+            background-color: #1f2937; /* gray-800 */
+            box-shadow: none;
+        }
+        
+        /* NEW: Rainbow text gradient for the footer */
+        .rainbow-text {
+            /* Create the rainbow gradient */
+            background-image: linear-gradient(to right, 
+                #ef5350, /* Red */
+                #f48fb1, /* Pink */
+                #ab47bc, /* Purple */
+                #29b6f6, /* Light Blue */
+                #4dd0e1, /* Cyan */
+                #66bb6a, /* Green */
+                #ffee58, /* Yellow */
+                #ff7043  /* Orange */
+            );
+            /* Clip the background gradient to the text boundaries */
+            -webkit-background-clip: text;
+            background-clip: text;
+            /* Make the text transparent so the gradient shows through */
+            color: transparent;
+            font-weight: bold;
+            font-size: 1.25rem; /* text-xl */
+        }
+
+    </style>
+</head>
+<body class="p-4 flex flex-col items-center justify-center min-h-screen">
+
+    <div id="app" class="w-full max-w-2xl bg-gray-800 p-6 rounded-2xl shadow-2xl space-y-4">
+        <h1 class="text-3xl font-extrabold text-center text-emerald-400">
+            Food Chain Survivor
+        </h1>
+        <p id="gameInstructions" class="text-sm text-center text-gray-400">
+            You are the **Rabbit** (Primary Consumer). Eat **Carrots** (Producers) to score points, but avoid the **Foxes** (Secondary Consumers)!
+        </p>
+
+        <!-- Canvas Container and Overlay -->
+        <div class="relative w-full aspect-square max-h-[80vh] mx-auto">
+            <canvas id="gameCanvas" class="w-full h-full"></canvas>
+            
+            <!-- Start/Game Over/Puzzle Overlay -->
+            <div id="overlay" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                <div id="messageBox" class="message-box p-6 text-center w-11/12 max-w-md">
+
+                    <!-- NEW: Level Selection -->
+                    <div id="levelSelection" class="mb-6">
+                        <p class="text-xl text-gray-800 mb-3 font-bold">Choose Difficulty</p>
+                        <div class="flex justify-center space-x-3">
+                            <button data-level="easy" class="level-button px-5 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-150 shadow-md">Easy</button>
+                            <button data-level="medium" class="level-button px-5 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition duration-150 shadow-md">Medium</button>
+                            <button data-level="fast" class="level-button px-5 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">Fast</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Content will be dynamically populated by JS based on gameState.mode -->
+                    <h2 id="overlayTitle" class="text-3xl font-bold text-gray-800 mb-2">Food Chain Survivor</h2>
+                    <p id="overlayInstructions" class="text-gray-600 mb-4">
+                        Use **Arrow Keys** or **Drag** on the screen to move the Rabbit.
+                    </p>
+                    
+                    <!-- Puzzle Elements -->
+                    <div id="puzzleContainer" class="hidden">
+                        <p class="text-gray-600 mb-4 font-semibold">Solve this equation to escape and stun the fox!</p>
+                        <p id="puzzleQuestion" class="text-5xl font-extrabold text-red-600 mb-6"></p>
+                        <input type="number" id="puzzleAnswerInput" class="w-full px-4 py-3 text-center text-2xl border-2 border-red-400 rounded-lg mb-4 focus:outline-none focus:border-red-600" placeholder="Your Answer">
+                        <button id="submitPuzzleButton" class="w-full px-6 py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition duration-150 shadow-md">
+                            Escape!
+                        </button>
+                        <p id="puzzleFeedback" class="text-sm mt-2 font-semibold"></p>
+                    </div>
+
+                    <!-- Start/End Button -->
+                    <button id="startButton" class="px-6 py-3 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition duration-150 shadow-md">
+                        Start Game
+                    </button>
+
+                </div>
+            </div>
+        </div>
+        
+        <!-- Score, Lives, and High Score Display - Updated for 3 items -->
+        <div class="flex justify-between items-center text-xl font-bold text-white mt-4">
+            <span class="text-gray-400 space-x-4">
+                Lives: <span id="livesDisplay" class="text-red-400">3</span>
+                <span class="mx-2">|</span>
+                Score: <span id="scoreDisplay" class="text-yellow-400">0</span>
+            </span>
+            <span class="text-gray-400">High Score: <span id="highScoreDisplay" class="text-pink-400">0</span></span>
+        </div>
+
+        <!-- NEW CONTROL BUTTONS (Simulated D-Pad) - NOW BIGGER -->
+        <div class="mt-4 flex flex-col items-center">
+            
+            <!-- Row 1: Up -->
+            <button id="controlUp" class="control-button w-20 h-20 mb-1 hover:bg-gray-600">&#9650;</button>
+            
+            <div class="flex space-x-3">
+                <!-- Left -->
+                <button id="controlLeft" class="control-button w-20 h-20 hover:bg-gray-600">&#9664;</button>
+                <!-- Down -->
+                <button id="controlDown" class="control-button w-20 h-20 hover:bg-gray-600">&#9660;</button>
+                <!-- Right -->
+                <button id="controlRight" class="control-button w-20 h-20 hover:bg-gray-600">&#9654;</button>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- NEW: Footer -->
+    <footer class="mt-8 text-center w-full max-w-2xl">
+        <p class="rainbow-text">
+            Developed by surendar nath (G7A)
+        </p>
+    </footer>
+
+
+    <script>
+        // --- Game Elements and State Initialization ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        // References to new elements
+        const livesDisplay = document.getElementById('livesDisplay'); 
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        const startButton = document.getElementById('startButton');
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlayInstructions = document.getElementById('overlayInstructions');
+        const puzzleContainer = document.getElementById('puzzleContainer');
+        const puzzleQuestionDisplay = document.getElementById('puzzleQuestion');
+        const puzzleAnswerInput = document.getElementById('puzzleAnswerInput');
+        const submitPuzzleButton = document.getElementById('submitPuzzleButton');
+        const gameInstructions = document.getElementById('gameInstructions');
+        const levelSelectionContainer = document.getElementById('levelSelection'); // NEW
+        
+        // Control Button References
+        const controlUp = document.getElementById('controlUp');
+        const controlDown = document.getElementById('controlDown');
+        const controlLeft = document.getElementById('controlLeft');
+        const controlRight = document.getElementById('controlRight');
+
+        // NEW: Difficulty Level Configurations
+        const LEVELS = {
+            easy: { playerSpeed: 6.5, foxBaseSpeed: 2.0, scoreMultiplier: 0.25, color: 'green' },
+            medium: { playerSpeed: 5, foxBaseSpeed: 3.0, scoreMultiplier: 0.5, color: 'yellow' },
+            fast: { playerSpeed: 5, foxBaseSpeed: 4.5, scoreMultiplier: 0.75, color: 'red' }
+        };
+
+        let gameState = {
+            mode: 'start', // 'start', 'running', 'puzzle', 'gameover'
+            score: 0,
+            highScore: parseInt(localStorage.getItem('foodChainHighScore') || 0),
+            lives: 3, 
+            lastEatFrame: 0, 
+            currentLevel: 'medium', // Default level
+            playerSpeed: LEVELS.medium.playerSpeed, // Initial speed based on default level
+            playerSize: 40,
+            frame: 0
+        };
+
+        let player = { x: 0, y: 0, dx: 0, dy: 0, angle: 0 };
+        let foods = []; // Carrots
+        let predators = []; // Foxes
+        
+        let currentPuzzle = null;
+        let currentAttackingPredator = null;
+        
+        const EMOJI = {
+            player: '🐇', // Rabbit
+            food: '🥕',  // Carrot
+            predator: '🦊', // Fox
+            stunnedPredator: '😵' // Stunned Fox (if solved)
+        };
+        
+        // 10 seconds at 60 frames per second
+        const STARVATION_FRAMES = 600; 
+
+        const keys = {};
+
+        // --- Utility Functions ---
+
+        // Function to handle canvas resizing
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const size = container.clientWidth;
+            canvas.width = size;
+            canvas.height = size;
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+        }
+
+        // Checks collision between two circular objects
+        function checkCollision(objA, objB, minDistance) {
+            const dx = objA.x - objB.x;
+            const dy = objA.y - objB.y;
+            return Math.sqrt(dx * dx + dy * dy) < minDistance;
+        }
+
+        // Draws an emoji on the canvas
+        function drawEmoji(emoji, x, y, size) {
+            ctx.font = `${size}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, x, y);
+        }
+
+        // --- Game Object Management ---
+
+        function spawnFood() {
+            if (foods.length < 10) {
+                foods.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: 30
+                });
+            }
+        }
+
+        function spawnPredator() {
+            const MAX_PREDATORS = 5; 
+            if (predators.length < MAX_PREDATORS) {
+                let x, y;
+                if (Math.random() < 0.5) { // Spawn on x edge
+                    x = Math.random() < 0.5 ? -50 : canvas.width + 50;
+                    y = Math.random() * canvas.height;
+                } else { // Spawn on y edge
+                    x = Math.random() * canvas.width;
+                    y = Math.random() < 0.5 ? -50 : canvas.height + 50;
+                }
+                
+                // NEW: Use level-specific parameters for fox speed
+                const config = LEVELS[gameState.currentLevel];
+                // Fox base speed + score speed increase based on multiplier
+                const speed = config.foxBaseSpeed + (gameState.score / 100) * config.scoreMultiplier; 
+
+                const angleToPlayer = Math.atan2(player.y - y, player.x - x);
+
+                predators.push({
+                    x: x,
+                    y: y,
+                    dx: Math.cos(angleToPlayer) * speed,
+                    dy: Math.sin(angleToPlayer) * speed,
+                    size: 40,
+                    speed: speed,
+                    isStunned: false,
+                    stunDuration: 0,
+                    originalSpeed: speed // Store base speed to maintain difficulty after stun
+                });
+            }
+        }
+        
+        // --- Difficulty Logic ---
+        
+        // NEW: Function to set the difficulty level
+        function setLevel(level) {
+            if (!LEVELS[level]) return;
+
+            gameState.currentLevel = level;
+            const config = LEVELS[level];
+            
+            // Apply player speed based on level
+            gameState.playerSpeed = config.playerSpeed;
+
+            // Update UI buttons (visual feedback)
+            document.querySelectorAll('.level-button').forEach(button => {
+                const buttonLevel = button.dataset.level;
+                
+                // Remove all border colors
+                button.classList.remove('border-2', 'border-green-700', 'border-yellow-700', 'border-red-700');
+                
+                // Add border to selected button
+                if (buttonLevel === level) {
+                    // Use a slightly darker color for the border to indicate selection
+                    button.classList.add('border-2', `border-${config.color}-700`);
+                }
+            });
+            
+            // Update instructions text to show current level
+            gameInstructions.innerHTML = `Current Difficulty: **${level.toUpperCase()}**. You are the Rabbit (Primary Consumer). Eat Carrots (Producers) to score points, but avoid the Foxes (Secondary Consumers)!`;
+        }
+
+
+        // --- Puzzle Logic ---
+
+        function generateMathPuzzle() {
+            const num1 = Math.floor(Math.random() * 15) + 5; 
+            const num2 = Math.floor(Math.random() * 10) + 1; 
+            const operators = ['+', '-', '*'];
+            const op = operators[Math.floor(Math.random() * operators.length)];
+            let question, answer;
+
+            if (op === '*') {
+                question = `${num1} ${op} ${num2}`;
+                answer = num1 * num2;
+            } else if (op === '-') {
+                const a = Math.max(num1, num2);
+                const b = Math.min(num1, num2);
+                question = `${a} ${op} ${b}`;
+                answer = a - b;
+            } else { // '+'
+                question = `${num1} ${op} ${num2}`;
+                answer = num1 + num2;
+            }
+
+            return { question, answer: answer };
+        }
+        
+        function setupPuzzle() {
+            gameState.mode = 'puzzle';
+            
+            currentPuzzle = generateMathPuzzle();
+            
+            overlayTitle.textContent = 'FOX ATTACK!';
+            overlayTitle.classList.remove('text-gray-800', 'text-emerald-400');
+            overlayTitle.classList.add('text-red-600');
+            
+            overlayInstructions.classList.add('hidden');
+            startButton.classList.add('hidden');
+            levelSelectionContainer.classList.add('hidden'); // Hide level selection during puzzle
+
+            puzzleContainer.classList.remove('hidden');
+            puzzleQuestionDisplay.textContent = currentPuzzle.question + ' = ?';
+            puzzleAnswerInput.value = '';
+            puzzleAnswerInput.focus();
+        }
+        
+        /**
+         * Function to handle life loss and game over condition
+         */
+        function loseLife(reason) {
+            gameState.lives--;
+            livesDisplay.textContent = gameState.lives;
+            
+            // Temporary feedback for the player
+            let message = '';
+            if (reason === 'starvation') {
+                message = 'You starved! A life was lost.';
+            } else if (reason === 'puzzle_fail') {
+                message = 'Wrong answer! You lost a life but got away.';
+            }
+            
+            // Show feedback on instructions bar
+            gameInstructions.textContent = `${message} (${gameState.lives} lives remaining.)`;
+            gameInstructions.classList.remove('text-gray-400', 'text-emerald-400');
+            gameInstructions.classList.add('text-red-500', 'font-bold');
+            
+            setTimeout(() => {
+                // Reset instruction bar after 3 seconds
+                const levelName = gameState.currentLevel.toUpperCase();
+                gameInstructions.innerHTML = `Current Difficulty: **${levelName}**. You are the **Rabbit** (Primary Consumer). Eat **Carrots** (Producers) to score points, but avoid the **Foxes** (Secondary Consumers)!`;
+                gameInstructions.classList.add('text-gray-400');
+                gameInstructions.classList.remove('text-red-500', 'font-bold');
+            }, 3000);
+
+
+            if (gameState.lives <= 0) {
+                displayGameOver();
+                return true;
+            }
+            return false;
+        }
+
+        function checkPuzzleAnswer() {
+            // SAFETY FIX: Prevent errors if currentPuzzle is null (e.g., rapid button clicking after resolution)
+            if (!currentPuzzle || gameState.mode !== 'puzzle') {
+                return; 
+            }
+            
+            const userAnswer = parseInt(puzzleAnswerInput.value.trim());
+            const feedback = document.getElementById('puzzleFeedback');
+            
+            if (isNaN(userAnswer)) {
+                feedback.textContent = 'Please enter a number!';
+                feedback.classList.remove('text-green-600');
+                feedback.classList.add('text-red-600');
+                return;
+            }
+            
+            // Stun and Repel Fox (used for both success and non-fatal failure)
+            const stunAndRepelFox = () => {
+                currentAttackingPredator.isStunned = true;
+                currentAttackingPredator.stunDuration = 180; // 3 seconds
+                
+                // Repel the fox away from the player
+                currentAttackingPredator.dx = -player.dx * 3 || (Math.random() > 0.5 ? 10 : -10);
+                currentAttackingPredator.dy = -player.dy * 3 || (Math.random() > 0.5 ? 10 : -10);
+            };
+            
+            // Helper function to clean up the puzzle state variables
+            const cleanupPuzzleState = () => {
+                currentAttackingPredator = null;
+                currentPuzzle = null;
+            };
+
+            if (userAnswer === currentPuzzle.answer) {
+                // SUCCESS!
+                feedback.textContent = 'SUCCESS! Fox stunned, resuming game...';
+                feedback.classList.remove('text-red-600');
+                feedback.classList.add('text-green-600');
+                
+                stunAndRepelFox();
+                cleanupPuzzleState(); // Clean up state
+                setTimeout(resumeGame, 500); 
+
+            } else {
+                // FAILURE! Lose a life.
+                
+                // If this loss results in Game Over, loseLife returns true.
+                const isGameOver = loseLife('puzzle_fail');
+                
+                feedback.textContent = `WRONG! The correct answer was ${currentPuzzle.answer}. You lost a life.`;
+                feedback.classList.remove('text-green-600');
+                feedback.classList.add('text-red-600');
+
+                if (!isGameOver) {
+                    // Stun and repel the fox if the player still has lives.
+                    stunAndRepelFox();
+                    cleanupPuzzleState(); // Clean up state
+                    setTimeout(resumeGame, 1500); // Give player time to read feedback
+                } else {
+                    // If game over, cleanup is handled implicitly/explicitly by displayGameOver, but explicitly cleaning here is safe.
+                    cleanupPuzzleState();
+                }
+            }
+        }
+        
+        // --- Game State Handlers ---
+        
+        function resetOverlay() {
+            overlayTitle.classList.remove('text-red-600');
+            overlayTitle.classList.add('text-gray-800');
+            overlayInstructions.classList.remove('hidden');
+            startButton.classList.remove('hidden');
+            puzzleContainer.classList.add('hidden');
+            levelSelectionContainer.classList.remove('hidden'); // Show level selection
+            document.getElementById('puzzleFeedback').textContent = '';
+        }
+
+        function initializeGame() {
+            gameState.score = 0;
+            gameState.frame = 0;
+            gameState.lives = 3; // Reset lives
+            gameState.lastEatFrame = 0; // Reset starvation timer
+            
+            scoreDisplay.textContent = '0';
+            livesDisplay.textContent = '3'; // Update lives display
+            
+            foods = [];
+            predators = [];
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            player.dx = 0;
+            player.dy = 0;
+            player.angle = 0;
+
+            // Ensure player speed is set based on selected level
+            setLevel(gameState.currentLevel); 
+        }
+
+        function resumeGame() {
+            gameState.mode = 'running';
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            // Hide level selection once game starts
+            levelSelectionContainer.classList.add('hidden');
+        }
+
+        function startGame() {
+            initializeGame();
+            resetOverlay();
+
+            overlayTitle.textContent = 'Food Chain Survivor';
+            overlayTitle.classList.add('text-emerald-400');
+            overlayTitle.classList.remove('text-gray-800');
+            overlayInstructions.innerHTML = `Use **Arrow Keys**, **On-Screen Buttons**, or **Drag** on the screen to move the Rabbit.`;
+            startButton.textContent = 'Start Game';
+
+            resumeGame();
+        }
+
+        function displayGameOver() {
+            gameState.mode = 'gameover';
+            
+            resetOverlay();
+            
+            overlayTitle.textContent = 'GAME OVER';
+            overlayTitle.classList.remove('text-emerald-400');
+            overlayTitle.classList.add('text-gray-800');
+            
+            overlayInstructions.innerHTML = `You ran out of lives! Final score: **${gameState.score}** points.`;
+            startButton.textContent = 'Play Again';
+            
+            // Show the level selection again after Game Over
+            levelSelectionContainer.classList.remove('hidden');
+            
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+
+            currentAttackingPredator = null;
+            currentPuzzle = null;
+        }
+
+        function handlePredatorEncounter(predator) {
+            if (gameState.mode !== 'running') return;
+            
+            // Pause movement
+            player.dx = 0;
+            player.dy = 0;
+
+            // Set up puzzle challenge
+            currentAttackingPredator = predator;
+            setupPuzzle();
+
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        // --- Game Loop Functions ---
+
+        function update() {
+            if (gameState.mode !== 'running') return;
+
+            gameState.frame++;
+            
+            // 1. Starvation check
+            if (gameState.frame - gameState.lastEatFrame > STARVATION_FRAMES) {
+                // Lose a life due to starvation and reset the timer
+                loseLife('starvation');
+                gameState.lastEatFrame = gameState.frame; 
+            }
+
+            // 2. Player Movement
+            // Player speed is set dynamically by the setLevel function
+            player.x += player.dx;
+            player.y += player.dy;
+            player.x = Math.max(gameState.playerSize / 2, Math.min(canvas.width - gameState.playerSize / 2, player.x));
+            player.y = Math.max(gameState.playerSize / 2, Math.min(canvas.height - gameState.playerSize / 2, player.y));
+            if (player.dx !== 0 || player.dy !== 0) {
+                player.angle = Math.atan2(player.dy, player.dx) + Math.PI / 2;
+            }
+
+            // 3. Spawning & Predator Movement
+            if (gameState.frame % 60 === 0) {
+                spawnFood();
+            }
+
+            if (gameState.frame % 60 === 0) { 
+                spawnPredator();
+            }
+
+            predators.forEach(p => {
+                if (p.isStunned) {
+                    p.stunDuration--;
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    if (p.stunDuration <= 0) {
+                        p.isStunned = false;
+                        const angleToPlayer = Math.atan2(player.y - p.y, player.x - p.x);
+                        p.dx = Math.cos(angleToPlayer) * p.originalSpeed;
+                        p.dy = Math.sin(angleToPlayer) * p.originalSpeed;
+                    }
+                    return;
+                }
+
+                const angleToPlayer = Math.atan2(player.y - p.y, player.x - p.x);
+                p.dx = Math.cos(angleToPlayer) * p.originalSpeed;
+                p.dy = Math.sin(angleToPlayer) * p.originalSpeed;
+                
+                p.x += p.dx;
+                p.y += p.dy;
+
+                if (p.x < -100 || p.x > canvas.width + 100 || p.y < -100 || p.y > canvas.height + 100) {
+                    predators.splice(predators.indexOf(p), 1);
+                }
+            });
+
+
+            // 4. Collision Detection
+            // Player vs Food (Eat)
+            foods = foods.filter(food => {
+                if (checkCollision(player, food, (gameState.playerSize + food.size) / 3)) {
+                    gameState.score += 10;
+                    scoreDisplay.textContent = gameState.score;
+                    gameState.lastEatFrame = gameState.frame; // IMPORTANT: Reset starvation timer
+                    return false;
+                }
+                return true;
+            });
+
+            // Player vs Predator (Puzzle Challenge)
+            predators.forEach(predator => {
+                if (!predator.isStunned && checkCollision(player, predator, (gameState.playerSize + predator.size) / 3)) {
+                    handlePredatorEncounter(predator);
+                }
+            });
+
+            // Update high score
+            if (gameState.score > gameState.highScore) {
+                gameState.highScore = gameState.score;
+                localStorage.setItem('foodChainHighScore', gameState.highScore);
+                highScoreDisplay.textContent = gameState.highScore;
+            }
+        }
+
+        function draw() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Food
+            foods.forEach(food => {
+                drawEmoji(EMOJI.food, food.x, food.y, food.size);
+            });
+
+            // Draw Predators (The Foxes)
+            predators.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                
+                const emojiToDraw = p.isStunned ? EMOJI.stunnedPredator : EMOJI.predator;
+                
+                if (!p.isStunned) {
+                    ctx.rotate(Math.atan2(p.dy, p.dx));
+                }
+                
+                drawEmoji(emojiToDraw, 0, 0, p.size);
+                ctx.restore();
+            });
+
+            // Draw Player (The Rabbit)
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+            drawEmoji(EMOJI.player, 0, 0, gameState.playerSize);
+            ctx.restore();
+
+
+            requestAnimationFrame(draw);
+        }
+
+        // --- Input Handling (Keyboard and Touch) ---
+        
+        function updatePlayerVelocity() {
+            if (gameState.mode !== 'running') {
+                player.dx = 0;
+                player.dy = 0;
+                return;
+            }
+
+            player.dx = 0;
+            player.dy = 0;
+
+            // Use the current speed from gameState, set by the difficulty level
+            const speed = gameState.playerSpeed; 
+
+            if (keys['ArrowUp'] || keys['w']) player.dy = -speed;
+            if (keys['ArrowDown'] || keys['s']) player.dy = speed;
+            if (keys['ArrowLeft'] || keys['a']) player.dx = -speed;
+            if (keys['ArrowRight'] || keys['d']) player.dx = speed;
+            
+            // Diagonal movement normalization
+            if (player.dx !== 0 && player.dy !== 0) {
+                const magnitude = Math.sqrt(player.dx * player.dx + player.dy * player.dy);
+                player.dx = (player.dx / magnitude) * speed;
+                player.dy = (player.dy / magnitude) * speed;
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (gameState.mode === 'running') {
+                keys[e.key] = true;
+                updatePlayerVelocity();
+            } else if (e.key === 'Enter') {
+                if (gameState.mode === 'start' || gameState.mode === 'gameover') {
+                    startGame();
+                } else if (gameState.mode === 'puzzle') {
+                    checkPuzzleAnswer();
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+            updatePlayerVelocity();
+        });
+
+        // --- On-Screen Control Buttons ---
+        function setupControlButtons() {
+            const controls = [
+                { element: controlUp, key: 'ArrowUp' },
+                { element: controlDown, key: 'ArrowDown' },
+                { element: controlLeft, key: 'ArrowLeft' },
+                { element: controlRight, key: 'ArrowRight' }
+            ];
+
+            controls.forEach(({ element, key }) => {
+                const startMovement = (e) => {
+                    e.preventDefault();
+                    if (gameState.mode === 'running') {
+                        keys[key] = true;
+                        updatePlayerVelocity();
+                    }
+                };
+                
+                const stopMovement = (e) => {
+                    e.preventDefault();
+                    if (gameState.mode === 'running') {
+                        keys[key] = false;
+                        updatePlayerVelocity();
+                    }
+                };
+
+                element.addEventListener('pointerdown', startMovement);
+                element.addEventListener('pointerup', stopMovement);
+                element.addEventListener('pointerleave', stopMovement);
+                element.addEventListener('contextmenu', (e) => e.preventDefault());
+            });
+        }
+
+        // --- Touch/Pointer Movement (Drag) on Canvas ---
+        let lastTouchX = null;
+        let lastTouchY = null;
+        const touchDeadZone = 5;
+
+        canvas.addEventListener('pointerdown', (e) => {
+            if (gameState.mode !== 'running') return;
+            e.preventDefault(); 
+            lastTouchX = e.clientX;
+            lastTouchY = e.clientY;
+            canvas.setPointerCapture(e.pointerId);
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (gameState.mode !== 'running' || lastTouchX === null) return;
+            e.preventDefault();
+
+            const deltaX = e.clientX - lastTouchX;
+            const deltaY = e.clientY - lastTouchY;
+            
+            if (Math.abs(deltaX) > touchDeadZone || Math.abs(deltaY) > touchDeadZone) {
+                const angle = Math.atan2(deltaY, deltaX);
+                // Use the current speed from gameState, set by the difficulty level
+                player.dx = Math.cos(angle) * gameState.playerSpeed; 
+                player.dy = Math.sin(angle) * gameState.playerSpeed;
+            }
+            
+            lastTouchX = e.clientX;
+            lastTouchY = e.clientY;
+        });
+
+        canvas.addEventListener('pointerup', (e) => {
+            if (gameState.mode !== 'running') return;
+            lastTouchX = null;
+            lastTouchY = null;
+            player.dx = 0;
+            player.dy = 0;
+            canvas.releasePointerCapture(e.pointerId);
+        });
+
+
+        // --- Initialization ---
+
+        window.addEventListener('resize', resizeCanvas);
+        startButton.addEventListener('click', startGame);
+        submitPuzzleButton.addEventListener('click', checkPuzzleAnswer);
+        puzzleAnswerInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                checkPuzzleAnswer();
+            }
+        });
+        
+        // Setup level buttons
+        document.querySelectorAll('.level-button').forEach(button => {
+            button.addEventListener('click', () => {
+                setLevel(button.dataset.level);
+            });
+        });
+
+        function gameLoop() {
+            update();
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.onload = function () {
+            resizeCanvas(); 
+            highScoreDisplay.textContent = gameState.highScore;
+            livesDisplay.textContent = gameState.lives;
+            
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            
+            setupControlButtons();
+            
+            // Set the default level visual and speed
+            setLevel(gameState.currentLevel);
+
+            requestAnimationFrame(draw); 
+            gameLoop();
+        }
+
+    </script>
+</body>
+</html>
