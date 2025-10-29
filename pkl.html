@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Kabaddi Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e53e3e; /* Kabaddi Red */
+            --secondary-color: #3182ce; /* Kabaddi Blue */
+            --accent-color: #ecc94b; /* Gold/Yellow */
+            --bg-dark: #1a202c; /* Dark background */
+            --bg-medium: #2d3748; /* Medium background for cards */
+            --bg-light: #4a5568; /* Light background for highlights */
+            --text-light: #edf2f7;
+            --text-dark: #1a202c;
+            --correct-green: #38a169;
+            --incorrect-red: #e53e3e;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            
+            /* REMOVED: background-image URL and attachment */
+            position: relative;
+        }
+
+        /* --- NEW EMOJI BACKGROUND AND OVERLAY COMBINED --- */
+        body::before {
+            /* Repeating pattern of Kabaddi/sports emojis */
+            content: "🏃‍♂️🤼🏆🇮🇳🥇🎯🔥🚩🏃‍♂️🤼🏆🇮🇳🥇🎯🔥🚩"; 
+            
+            position: fixed; /* Use fixed for full screen coverage */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            
+            /* Background color that acts as the dark overlay */
+            background-color: rgba(0, 0, 0, 0.85); 
+            
+            /* Styling for the emojis to make them subtle */
+            font-size: 50px;
+            line-height: 100px;
+            color: rgba(255, 255, 255, 0.1); /* Very subtle white color for emojis */
+            
+            /* Formatting to make the emojis repeat and fill the screen */
+            white-space: pre-wrap;
+            word-break: break-all;
+            text-align: center;
+            overflow: hidden;
+            z-index: 0; /* Place behind the quiz container */
+        }
+        /* ------------------------------------------------ */
+
+        #quiz-container {
+            width: 100%;
+            max-width: 700px;
+            background-color: var(--bg-medium);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            transform: translateY(0);
+            transition: transform 0.3s ease-out;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--accent-color);
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            font-size: 2.8rem;
+            margin-bottom: 25px;
+            letter-spacing: 1.5px;
+        }
+
+        #start-screen, #quiz-screen, #result-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #start-screen.active, #quiz-screen.active, #result-screen.active {
+            display: flex;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+            margin-top: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3);
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        #start-quiz-btn {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border-bottom: 4px solid #b81f1f;
+        }
+        #start-quiz-btn:hover { background-color: #ff5e5e; }
+
+        #question-text {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        #options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            padding: 15px 20px;
+            border: 2px solid var(--bg-light);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        .option-btn:hover:not(.disabled) {
+            border-color: var(--accent-color);
+            transform: translateX(5px);
+        }
+        .option-btn.selected {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 10px rgba(49, 130, 206, 0.5);
+        }
+        .option-btn.correct {
+            background-color: var(--correct-green);
+            border-color: var(--correct-green);
+            box-shadow: 0 0 10px rgba(56, 161, 105, 0.7);
+        }
+        .option-btn.incorrect {
+            background-color: var(--incorrect-red);
+            border-color: var(--incorrect-red);
+            box-shadow: 0 0 10px rgba(229, 62, 62, 0.7);
+        }
+        .option-btn.disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .option-btn .icon {
+            margin-left: auto;
+            font-size: 1.4rem;
+            visibility: hidden;
+            width: 20px; /* Reserve space for icon */
+        }
+        .option-btn.correct .icon.check,
+        .option-btn.incorrect .icon.times {
+            visibility: visible;
+        }
+        /* Ensure only the correct icon is visible on the correct button */
+        .option-btn.correct .icon.times {
+            visibility: hidden;
+        }
+
+        #next-btn {
+            background-color: var(--secondary-color);
+            color: var(--text-light);
+            border-bottom: 4px solid #1c619e;
+            display: none; /* Hidden until an answer is selected */
+        }
+        #next-btn:hover { background-color: #5d9ee5; }
+        #next-btn.show { display: block; }
+
+        #progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: var(--bg-dark);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent-color);
+            border-radius: 5px;
+            transition: width 0.3s ease-out;
+        }
+
+        #score-display {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-top: 10px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+        }
+        #result-message {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+        #restart-quiz-btn {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            border-bottom: 4px solid #b81f1f;
+        }
+        #restart-quiz-btn:hover { background-color: #ff5e5e; }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; margin-bottom: 20px; }
+            #quiz-container { padding: 25px; }
+            #question-text { font-size: 1.4rem; margin-bottom: 20px; }
+            .option-btn { font-size: 1rem; padding: 12px 15px; }
+            .btn { padding: 12px 25px; font-size: 1.1rem; }
+            #score-display { font-size: 1.8rem; }
+            #result-message { font-size: 1.1rem; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.8rem; margin-bottom: 15px; }
+            #quiz-container { padding: 20px; border-radius: 10px; }
+            #question-text { font-size: 1.2rem; margin-bottom: 15px; }
+            .option-btn { font-size: 0.95rem; padding: 10px 12px; }
+            .btn { padding: 10px 20px; font-size: 1rem; }
+            #score-display { font-size: 1.5rem; }
+            #result-message { font-size: 1rem; }
+        }
+    </style>
+    
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <div id="quiz-container">
+        <h1>PKL Stars & Teams Quiz</h1>
+
+        
+
+<div id="start-screen" class="active">
+            <p style="font-size: 1.1rem; line-height: 1.6;">Test your knowledge of the Pro Kabaddi League (PKL), featuring questions about legendary players, iconic teams, and specific rules!</p>
+            <button id="start-quiz-btn" class="btn">Start Quiz</button>
+        </div>
+
+        
+
+<div id="quiz-screen">
+            <div id="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <p id="question-text"></p>
+            <div id="options-container">
+                
+
+</div>
+            <button id="next-btn" class="btn">Next Question</button>
+        </div>
+
+        
+
+<div id="result-screen">
+            <h2>Quiz Complete!</h2>
+            <p id="score-display">Your Score: 0/0</p>
+            <p id="result-message"></p>
+            <button id="restart-quiz-btn" class="btn">Restart Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // --- Original 10 Questions ---
+            {
+                question: "Which legendary raider is famously nicknamed the **'Dubki King'** for his signature low dive move?",
+                options: ["Ajay Thakur", "Pardeep Narwal", "Rohit Kumar", "Maninder Singh"],
+                correctAnswer: "Pardeep Narwal",
+                rationale: "Pardeep Narwal is known globally as the 'Dubki King' and is one of the top raiders in PKL history, often associated with the Patna Pirates."
+            },
+            {
+                question: "Which team won the **inaugural** Pro Kabaddi League title in Season 1 (2014)?",
+                options: ["U Mumba", "Bengaluru Bulls", "Patna Pirates", "Jaipur Pink Panthers"],
+                correctAnswer: "Jaipur Pink Panthers",
+                rationale: "The Jaipur Pink Panthers, led by Jasvir Singh, defeated U Mumba in the final to claim the first-ever PKL trophy."
+            },
+            {
+                question: "What is the continuous chanting of the word 'Kabaddi' by the raider called, which is fundamental to the game?",
+                options: ["The Tackle", "The Cant", "The Stutter", "The Pursuit"],
+                correctAnswer: "The Cant",
+                rationale: "The Cant is the mandatory, unbroken chanting of 'Kabaddi' during a raid, signaling the start and ensuring the raider doesn't take too long."
+            },
+            {
+                question: "Which Iranian defender, known for his devastating **'Ankle Hold'**, has captained multiple PKL teams, including U Mumba and Puneri Paltan?",
+                options: ["Mohammad Esmaeil Nabibakhsh", "Fazel Atrachali", "Abozar Mohajermighani", "Saeid Ghaffari"],
+                correctAnswer: "Fazel Atrachali",
+                rationale: "Fazel Atrachali, often referred to as the 'Sultan', is one of the most successful foreign players and a master of the Ankle Hold."
+            },
+            {
+                question: "In the PKL context, what specific achievement does the term **'Super 10'** refer to?",
+                options: [
+                    "A defender getting 10 or more tackle points in a match.",
+                    "A team scoring 10 or more points in a single raid.",
+                    "A raider scoring 10 or more raid points in a match.",
+                    "The last 10 minutes of the match."
+                ],
+                correctAnswer: "A raider scoring 10 or more raid points in a match.",
+                rationale: "A Super 10 is the benchmark for a successful raid performance, equivalent to a 'century' for a batsman in cricket."
+            },
+            {
+                question: "How many points does the defending team earn for executing a **'Super Tackle'**?",
+                options: ["1 point", "2 points", "3 points", "5 points"],
+                correctAnswer: "2 points",
+                rationale: "A Super Tackle is achieved when the defending side has three or fewer players on the mat, and successfully tackling the raider earns them 2 points."
+            },
+            {
+                question: "Which PKL team is the only franchise to have won the title **three times in a row** (Seasons 4, 5, and 6)?",
+                options: ["Bengaluru Bulls", "U Mumba", "Patna Pirates", "Dabang Delhi K.C."],
+                correctAnswer: "Patna Pirates",
+                rationale: "The Patna Pirates are famous for their dominant run, achieving a unique hat-trick of titles with Pardeep Narwal as their key player during that period."
+            },
+            {
+                question: "What is the mandatory defensive action known for stopping a raider by grabbing their leg and restricting movement, often performed by the corners like **Surender Nada**?",
+                options: ["Running Hand Touch", "Lion Jump", "Thigh Hold", "Ankle Hold"],
+                correctAnswer: "Ankle Hold",
+                rationale: "The Ankle Hold is the fundamental defensive move of the corner defenders, where they grab the raider's ankle to halt them."
+            },
+            {
+                question: "How many players from one team are allowed on the court at a time during a standard Kabaddi match?",
+                options: ["5", "7", "9", "11"],
+                correctAnswer: "7",
+                rationale: "Each team has 7 players on the mat at a time, with 5 substitutes on the bench."
+            },
+            {
+                question: "In the PKL, if a team has two consecutive 'empty raids' (no points), the next raid must be a:",
+                options: ["Do-or-Die raid", "Super Raid", "Bonus Raid", "Pursuit Raid"],
+                correctAnswer: "Do-or-Die raid",
+                rationale: "The Do-or-Die rule forces action on the third raid, preventing too many empty raids and keeping the game dynamic."
+            },
+
+            // --- 20 New Questions Added ---
+            {
+                question: "Who was the first player in PKL history to cross the milestone of **1000 total raid points**?",
+                options: ["Rahul Chaudhari", "Pardeep Narwal", "Deepak Hooda", "Ajay Thakur"],
+                correctAnswer: "Pardeep Narwal",
+                rationale: "Pardeep Narwal achieved this massive milestone first, cementing his legacy as one of the greatest raiders."
+            },
+            {
+                question: "Which PKL team is known for its **'Yoddha'** identity and represents the state of Uttar Pradesh?",
+                options: ["Gujarat Giants", "Telugu Titans", "U.P. Yoddha", "Haryana Steelers"],
+                correctAnswer: "U.P. Yoddha",
+                rationale: "The team represents Uttar Pradesh and their name 'Yoddha' translates to 'Warrior'."
+            },
+            {
+                question: "Which legendary defender holds the record for the **most 'High 5s'** (5 or more tackle points) in PKL history?",
+                options: ["Fazel Atrachali", "Nitesh Kumar", "Surender Nada", "Manjeet Chhillar"],
+                correctAnswer: "Fazel Atrachali",
+                rationale: "Fazel Atrachali, the Iranian 'Sultan', is a defensive powerhouse known for his consistency and record-breaking High 5s."
+            },
+            {
+                question: "What is the penalty called when a team has more than seven players on the court during play?",
+                options: ["Technical Point", "Misconduct Point", "All-Out Penalty", "Holding Point"],
+                correctAnswer: "Technical Point",
+                rationale: "A Technical Point is awarded to the opposition for various rule breaches, including having too many players on the court."
+            },
+            {
+                question: "Which player won the **Most Valuable Player (MVP)** award in the inaugural Season 1 (2014)?",
+                options: ["Pardeep Narwal", "Anup Kumar", "Manjeet Chhillar", "Rohit Kumar"],
+                correctAnswer: "Anup Kumar",
+                rationale: "Anup Kumar, the cool captain of U Mumba, was the first-ever MVP, showcasing a blend of raiding and leadership."
+            },
+            {
+                question: "Which move involves the raider touching a defender with the tip of their foot, usually while pivoting rapidly?",
+                options: ["Hand Touch", "Scorpion Kick", "Toe Touch", "Back Kick"],
+                correctAnswer: "Toe Touch",
+                rationale: "The Toe Touch is a difficult move requiring agility and precision, often used to tag the corner defenders."
+            },
+            {
+                question: "Which team won the PKL title in Season 8 (2021-22), defeating Patna Pirates in the final?",
+                options: ["Bengaluru Bulls", "Dabang Delhi K.C.", "Puneri Paltan", "Gujarat Giants"],
+                correctAnswer: "Dabang Delhi K.C.",
+                rationale: "Dabang Delhi K.C. secured their first championship title in Season 8 under the leadership of Joginder Narwal."
+            },
+            {
+                question: "In Kabaddi, what action must the raider perform for the **Bonus Line** to become active (giving a potential bonus point)?",
+                options: [
+                    "There must be at least 5 defenders on the mat.",
+                    "There must be at least 6 defenders on the mat.",
+                    "There must be exactly 4 defenders on the mat.",
+                    "The raider must touch the Mid Line."
+                ],
+                correctAnswer: "There must be at least 6 defenders on the mat.",
+                rationale: "The Bonus Line is only active when the defending team has 6 or 7 players on the mat, not during a Super Tackle situation."
+            },
+            {
+                question: "Which two teams contest the **'Southern Derby'** rivalry in the PKL?",
+                options: ["Bengal Warriors vs. Patna Pirates", "Bengaluru Bulls vs. Tamil Thalaivas", "U Mumba vs. Puneri Paltan", "Telugu Titans vs. Tamil Thalaivas"],
+                correctAnswer: "Telugu Titans vs. Tamil Thalaivas",
+                rationale: "The rivalry between the two South Indian teams, the Titans and the Thalaivas, is dubbed the 'Southern Derby'."
+            },
+            {
+                question: "What is the defensive move where two or more defenders link hands or bodies to stop a raider, making it highly effective?",
+                options: ["Chain Tackle", "Block", "Pursuit", "Dash"],
+                correctAnswer: "Chain Tackle",
+                rationale: "The Chain Tackle utilizes team coordination, where defenders form a 'chain' to maximize their strength and area of cover."
+            },
+            {
+                question: "Which team plays its home matches at the **Sree Kanteerava Stadium** in Bengaluru?",
+                options: ["Telugu Titans", "Bengaluru Bulls", "Tamil Thalaivas", "Puneri Paltan"],
+                correctAnswer: "Bengaluru Bulls",
+                rationale: "The Bengaluru Bulls have the Sree Kanteerava Indoor Stadium as their traditional home ground."
+            },
+            {
+                question: "What is the rule that mandates the third consecutive empty raid by a team must yield a point, or the raider is declared out?",
+                options: ["Golden Raid", "Super Catch", "Do-or-Die raid", "Sudden Death"],
+                correctAnswer: "Do-or-Die raid",
+                rationale: "The Do-or-Die rule is crucial for maintaining the pace of the game."
+            },
+            {
+                question: "Who is known as the **'Raid Machine'** for his consistent, high-scoring performances across seasons?",
+                options: ["Rahul Chaudhari", "Siddharth Desai", "Maninder Singh", "Girish Ernak"],
+                correctAnswer: "Rahul Chaudhari",
+                rationale: "Rahul Chaudhari was famously nicknamed the 'Raid Machine' during his prime for the Telugu Titans."
+            },
+            {
+                question: "If a raider is successfully tackled, and a defender steps over the end line during the tackle, which point rule applies?",
+                options: [
+                    "Raider is Out, Defender is Out (1 point each)",
+                    "Raider is Safe, Defender is Out (1 point to Raiding Team)",
+                    "Raider is Out, Defender is Safe (1 point to Defending Team)",
+                    "Only the defender is Out (No points awarded)"
+                ],
+                correctAnswer: "Raider is Out, Defender is Out (1 point each)",
+                rationale: "The fundamental rule is: if a player (raider or defender) goes out of bounds, they are out. Points are awarded to both sides in this scenario."
+            },
+            {
+                question: "Which team won the PKL title in Season 6 (2018-19), breaking the dominance of Patna Pirates?",
+                options: ["Gujarat Giants", "U Mumba", "Bengaluru Bulls", "Bengal Warriors"],
+                correctAnswer: "Bengaluru Bulls",
+                rationale: "Bengaluru Bulls, captained by Rohit Kumar, defeated Gujarat Fortunegiants (now Giants) in the final of Season 6."
+            },
+            {
+                question: "Which player is famous for his **'Lion Jump'** or running jump over defenders to escape a tackle?",
+                options: ["Pawan Sehrawat", "Dharmaraj Cheralathan", "Ajay Thakur", "Naveen Kumar"],
+                correctAnswer: "Pawan Sehrawat",
+                rationale: "Pawan Sehrawat's athleticism and ability to execute spectacular running jumps earned him the 'Hi-Flyer' nickname."
+            },
+            {
+                question: "In the PKL, what is the maximum number of players that can be revived and return to the mat after an 'All-Out'?",
+                options: ["5", "7", "10", "12"],
+                correctAnswer: "7",
+                rationale: "After an All-Out, all 7 players of the team are revived and return to the court."
+            },
+            {
+                question: "The defensive move **'Block'** is typically performed by which position player, who attempts to stop the raider from reaching the midline by tackling them from the front?",
+                options: ["Corner Defender", "Cover Defender", "Left-In Raider", "Center Raider"],
+                correctAnswer: "Cover Defender",
+                rationale: "Cover defenders specialize in the 'Block' or the 'Dash' from the side to cut off the raider's path to the midline."
+            },
+            {
+                question: "Which captain led the Bengal Warriors to their first PKL title in Season 7 (2019)?",
+                options: ["Maninder Singh", "Deepak Niwas Hooda", "Dharmaraj Cheralathan", "Anup Kumar"],
+                correctAnswer: "Maninder Singh",
+                rationale: "Maninder Singh was the star raider and captain who led the Bengal Warriors to victory against Dabang Delhi K.C."
+            },
+            {
+                question: "What is the official distance (in meters) between the **Mid Line** and the **Baulk Line** on a standard men's Kabaddi court?",
+                options: ["2.75 meters", "3.75 meters", "4.75 meters", "5 meters"],
+                correctAnswer: "3.75 meters",
+                rationale: "The distance between the Mid Line and the Baulk Line is standardized at 3.75 meters."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOption = null;
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreDisplay = document.getElementById('score-display');
+        const resultMessage = document.getElementById('result-message');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+
+        // Event Listeners
+        startQuizBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', loadNextQuestion);
+        restartQuizBtn.addEventListener('click', resetQuiz);
+
+        /**
+         * Initializes the quiz, showing the first question.
+         */
+        function startQuiz() {
+            startScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        /**
+         * Loads a question and its options into the UI.
+         */
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showResults();
+                return;
+            }
+
+            const currentQuestion = questions[currentQuestionIndex];
+            questionText.innerHTML = currentQuestion.question; // Use innerHTML to allow for bold tags in question text
+            optionsContainer.innerHTML = ''; // Clear previous options
+            selectedOption = null;
+            nextBtn.classList.remove('show'); // Hide next button
+
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.classList.add('option-btn');
+                button.textContent = option;
+                button.addEventListener('click', () => selectOption(button, option, currentQuestion.correctAnswer));
+                button.innerHTML += `<span class="icon check"><i class="fas fa-check"></i></span><span class="icon times"><i class="fas fa-times"></i></span>`;
+                optionsContainer.appendChild(button);
+            });
+
+            updateProgressBar();
+        }
+
+        /**
+         * Handles option selection, provides feedback, and updates score.
+         * @param {HTMLElement} button - The clicked option button.
+         * @param {string} selectedText - The text of the selected option.
+         * @param {string} correctAnswerText - The text of the correct answer.
+         */
+        function selectOption(button, selectedText, correctAnswerText) {
+            if (selectedOption !== null) return; // Prevent multiple selections
+
+            selectedOption = button;
+            button.classList.add('selected'); // Highlight selected
+
+            // Disable all options
+            Array.from(optionsContainer.children).forEach(btn => btn.classList.add('disabled'));
+
+            if (selectedText === correctAnswerText) {
+                button.classList.add('correct');
+                score++;
+            } else {
+                button.classList.add('incorrect');
+                
+                // Highlight the correct answer as well, with a safety check
+                const correctButton = Array.from(optionsContainer.children).find(
+                    btn => btn.textContent.includes(correctAnswerText)
+                );
+                
+                if (correctButton) {
+                    correctButton.classList.add('correct');
+                }
+            }
+
+            nextBtn.classList.add('show'); // Show next button
+        }
+
+        /**
+         * Loads the next question or shows results if quiz is finished.
+         */
+        function loadNextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        /**
+         * Updates the visual progress bar.
+         */
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        /**
+         * Displays the final results screen.
+         */
+        function showResults() {
+            quizScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            scoreDisplay.textContent = `Your Score: ${score}/${questions.length}`;
+
+            let message = '';
+            if (score === questions.length) {
+                message = "Outstanding! You're a Kabaddi Master and a true PKL fan!";
+            } else if (score > questions.length * 0.9) {
+                message = "Incredible performance! You know the PKL inside and out.";
+            } else if (score > questions.length * 0.7) {
+                message = "Excellent work! A true Kabaddi connoisseur.";
+            } else if (score > questions.length / 2) {
+                message = "Great effort! You know your PKL players and teams well.";
+            } else {
+                message = "Keep following the PKL! You'll get there with a little more practice.";
+            }
+            resultMessage.textContent = message;
+        }
+
+        /**
+         * Resets the quiz to its initial state.
+         */
+        function resetQuiz() {
+            resultScreen.classList.remove('active');
+            startScreen.classList.add('active'); // Go back to start screen
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedOption = null;
+            updateProgressBar(); // Reset progress bar visually
+        }
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            startScreen.classList.add('active');
+        });
+    </script>
+</body>
+</html>
