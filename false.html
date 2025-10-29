@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freedom Fighters True/False Quiz</title>
+    <!-- Load Tailwind CSS for styling --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for aesthetic appeal */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0e0e0; /* Lighter grey background as per image */
+            overflow: hidden; /* Hide scrollbars if emojis go beyond viewport */
+            position: relative; /* For emoji positioning */
+        }
+        .game-card {
+            background-color: #ffffff;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 40px auto;
+            border-radius: 1rem;
+            padding: 2rem;
+            position: relative; /* To keep card above emojis */
+            z-index: 10; /* Ensure game card is on top */
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid transparent;
+        }
+        .btn-true {
+            background-color: #10B981; /* Emerald 500 */
+            color: white;
+        }
+        .btn-false {
+            background-color: #EF4444; /* Red 500 */
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .btn-true:active {
+            background-color: #059669; /* Emerald 600 */
+        }
+        .btn-false:active {
+            background-color: #DC2626; /* Red 600 */
+        }
+        .btn-neutral {
+            background-color: #FBBF24; /* Amber 400 */
+            color: #1E293B; /* Slate 800 */
+        }
+        .feedback-box {
+            border-left-width: 4px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .correct {
+            border-color: #10B981;
+            background-color: #ECFDF5;
+        }
+        .incorrect {
+            border-color: #EF4444;
+            background-color: #FEF2F2;
+        }
+
+        /* --- Moving Emojis Background Styles --- */
+        .emoji-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1; /* Below the game card */
+        }
+
+        .emoji {
+            position: absolute;
+            opacity: 0.4; /* Slightly lower base opacity for more depth */
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            pointer-events: none;
+            user-select: none;
+            line-height: 1; /* Prevent extra space around emojis affecting size */
+        }
+
+        /* Define varied float animations */
+        @keyframes float-1 {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-70px) translateX(20px) rotate(15deg); opacity: 0.6; }
+            100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.3; }
+        }
+
+        @keyframes float-2 {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.2; }
+            50% { transform: translateY(-40px) translateX(-15px) rotate(-10deg); opacity: 0.5; }
+            100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.2; }
+        }
+
+        @keyframes float-3 {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.4; }
+            50% { transform: translateY(-90px) translateX(30px) rotate(20deg); opacity: 0.7; }
+            100% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.4; }
+        }
+
+        /* Individual animation delays, positions, and sizes for variety (more emojis added) */
+        .emoji:nth-child(1) { top: 10%; left: 5%; font-size: 3rem; animation: float-1 18s ease-in-out infinite alternate; animation-delay: 0s; }
+        .emoji:nth-child(2) { top: 25%; left: 80%; font-size: 2rem; animation: float-2 20s ease-in-out infinite alternate; animation-delay: 2s; }
+        .emoji:nth-child(3) { top: 50%; left: 20%; font-size: 3.5rem; animation: float-3 16s ease-in-out infinite alternate; animation-delay: 4s; }
+        .emoji:nth-child(4) { top: 70%; left: 60%; font-size: 2.5rem; animation: float-1 22s ease-in-out infinite alternate; animation-delay: 6s; }
+        .emoji:nth-child(5) { top: 5%; left: 40%; font-size: 4rem; animation: float-2 19s ease-in-out infinite alternate; animation-delay: 8s; }
+        .emoji:nth-child(6) { top: 85%; left: 15%; font-size: 2rem; animation: float-3 17s ease-in-out infinite alternate; animation-delay: 1s; }
+        .emoji:nth-child(7) { top: 30%; left: 35%; font-size: 3rem; animation: float-1 21s ease-in-out infinite alternate; animation-delay: 3s; }
+        .emoji:nth-child(8) { top: 60%; left: 90%; font-size: 2.2rem; animation: float-2 15s ease-in-out infinite alternate; animation-delay: 5s; }
+        .emoji:nth-child(9) { top: 40%; left: 70%; font-size: 3.8rem; animation: float-3 23s ease-in-out infinite alternate; animation-delay: 7s; }
+        .emoji:nth-child(10) { top: 95%; left: 45%; font-size: 2.7rem; animation: float-1 18s ease-in-out infinite alternate; animation-delay: 9s; }
+        .emoji:nth-child(11) { top: 15%; left: 90%; font-size: 3.2rem; animation: float-2 16s ease-in-out infinite alternate; animation-delay: 1s; }
+        .emoji:nth-child(12) { top: 80%; left: 5%; font-size: 2.8rem; animation: float-3 20s ease-in-out infinite alternate; animation-delay: 3s; }
+        .emoji:nth-child(13) { top: 20%; left: 50%; font-size: 4.2rem; animation: float-1 19s ease-in-out infinite alternate; animation-delay: 5s; }
+        .emoji:nth-child(14) { top: 65%; left: 10%; font-size: 2.3rem; animation: float-2 22s ease-in-out infinite alternate; animation-delay: 7s; }
+        .emoji:nth-child(15) { top: 55%; left: 85%; font-size: 3.5rem; animation: float-3 17s ease-in-out infinite alternate; animation-delay: 9s; }
+        .emoji:nth-child(16) { top: 0%; left: 25%; font-size: 2.9rem; animation: float-1 21s ease-in-out infinite alternate; animation-delay: 2s; }
+        .emoji:nth-child(17) { top: 90%; left: 75%; font-size: 4.5rem; animation: float-2 15s ease-in-out infinite alternate; animation-delay: 4s; }
+        .emoji:nth-child(18) { top: 45%; left: 0%; font-size: 2.1rem; animation: float-3 23s ease-in-out infinite alternate; animation-delay: 6s; }
+        .emoji:nth-child(19) { top: 35%; left: 95%; font-size: 3.7rem; animation: float-1 18s ease-in-out infinite alternate; animation-delay: 8s; }
+        .emoji:nth-child(20) { top: 75%; left: 30%; font-size: 2.6rem; animation: float-2 20s ease-in-out infinite alternate; animation-delay: 0s; }
+    </style>
+    <!-- Include the Inter font (Tailwind default) --><script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Moving Emoji Background Container --><div class="emoji-background">
+        <span class="emoji">🇮🇳</span>
+        <span class="emoji">🌟</span>
+        <span class="emoji">🕊️</span>
+        <span class="emoji">✊</span>
+        <span class="emoji">🇮🇳</span>
+        <span class="emoji">✨</span>
+        <span class="emoji">📜</span>
+        <span class="emoji">🕊️</span>
+        <span class="emoji">✊</span>
+        <span class="emoji">🇮🇳</span>
+        <span class="emoji">🗺️</span>
+        <span class="emoji">📖</span>
+        <span class="emoji">❤️</span>
+        <span class="emoji">🌟</span>
+        <span class="emoji">🕊️</span>
+        <span class="emoji">🇮🇳</span>
+        <span class="emoji">✨</span>
+        <span class="emoji">✊</span>
+        <span class="emoji">📜</span>
+        <span class="emoji">🎉</span>
+    </div>
+
+    <div id="quiz-container" class="game-card w-full">
+        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-4">
+            Freedom Fighters Quiz
+        </h1>
+        <p class="text-center text-gray-500 mb-8">True or False facts about the icons of independence.</p>
+
+        <!-- Quiz Area --><div id="quiz-area">
+            <div id="question-number" class="text-lg font-semibold text-indigo-600 mb-2">Question 1 / 10</div>
+            <div id="question-text" class="text-2xl font-bold text-gray-900 mb-8">
+                Loading question...
+            </div>
+
+            <!-- Buttons --><div class="flex space-x-4 justify-center">
+                <button id="true-btn" class="btn btn-true w-1/2 disabled:opacity-50 disabled:cursor-not-allowed" onclick="checkAnswer(true)">TRUE</button>
+                <button id="false-btn" class="btn btn-false w-1/2 disabled:opacity-50 disabled:cursor-not-allowed" onclick="checkAnswer(false)">FALSE</button>
+            </div>
+
+            <!-- Feedback and Next Button Area --><div id="feedback-area" class="mt-4 hidden">
+                <div id="feedback-message" class="feedback-box text-sm text-gray-800"></div>
+                <button id="next-btn" class="btn btn-neutral w-full mt-4 disabled:opacity-50 disabled:cursor-not-allowed" onclick="nextQuestion()">Next Question</button>
+            </div>
+        </div>
+
+        <!-- Score/Result Area --><div id="result-area" class="text-center hidden">
+            <h2 class="text-4xl font-extrabold text-gray-800 mb-4">Quiz Finished!</h2>
+            <p id="final-score" class="text-5xl font-black text-indigo-600 mb-6">Score: 0 / 10</p>
+            <p id="score-comment" class="text-xl text-gray-600 mb-8"></p>
+            <button class="btn btn-true w-full" onclick="startGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        const questions = [
+            {
+                text: "Mahatma Gandhi was known as the 'Iron Man of India'.",
+                answer: false,
+                explanation: "False. Sardar Vallabhbhai Patel was known as the 'Iron Man of India' for his role in consolidating princely states. Mahatma Gandhi is known as the 'Father of the Nation'."
+            },
+            {
+                text: "Subhas Chandra Bose formed the Indian National Army (INA) to fight for India's freedom through armed forces.",
+                answer: true,
+                explanation: "True. Subhas Chandra Bose, or 'Netaji', founded the INA and famously gave the call: 'Give me blood, and I will give you freedom'."
+            },
+            {
+                text: "Rani Lakshmi Bai was a key leader during the Revolt of 1857.",
+                answer: true,
+                explanation: "True. Rani Lakshmi Bai of Jhansi fought valiantly against British forces in 1857 to protect her kingdom, becoming a powerful symbol of resistance."
+            },
+            {
+                text: "Bhagat Singh was known for his policy of strict non-violence (Satyagraha) throughout his career.",
+                answer: false,
+                explanation: "False. Bhagat Singh was a revolutionary figure who protested British oppression through direct actions, including the bombing of the Central Legislative Assembly, contrasting with Gandhi's non-violent approach."
+            },
+            {
+                text: "Lala Lajpat Rai was nicknamed the 'Lion of Punjab'.",
+                answer: true,
+                explanation: "True. Lala Lajpat Rai was nicknamed the 'Lion of Punjab' (or 'Punjab Kesari') and was a prominent figure who protested colonial policies."
+            },
+            {
+                text: "Jawaharlal Nehru was India's first Education Minister, not its first Prime Minister.",
+                answer: false,
+                explanation: "False. Jawaharlal Nehru was both the first Prime Minister of India and an important leader who helped draft the country's independence."
+            },
+            {
+                text: "The slogan 'Swaraj is my birthright, and I shall have it!' was popularized by Bal Gangadhar Tilak.",
+                answer: true,
+                explanation: "True. Bal Gangadhar Tilak, known as the 'Father of Indian Unrest,' popularized this powerful slogan."
+            },
+            {
+                text: "Chandra Shekhar Azad vowed to never be caught alive by the British police.",
+                answer: true,
+                explanation: "True. He was a fearless revolutionary who kept this promise, ultimately sacrificing his life in a gun battle in a park in Allahabad (now Prayagraj)."
+            },
+            {
+                text: "Aruna Asaf Ali is best remembered for hoisting the Indian flag in Mumbai during the Non-Cooperation Movement in 1920.",
+                answer: false,
+                explanation: "False. Aruna Asaf Ali's famous act was hoisting the flag during the **Quit India Movement** in 1942, not the Non-Cooperation Movement of the 1920s."
+            },
+            {
+                text: "Mangal Pandey's actions are often cited as sparking the First War of Independence in 1857.",
+                answer: true,
+                explanation: "True. Mangal Pandey, a sepoy in the British East India Company's army, is widely credited with sparking the initial unrest that grew into the Revolt of 1857."
+            }
+        ];
+
+        // --- Game State Variables ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // --- DOM Elements ---
+        const quizArea = document.getElementById('quiz-area');
+        const resultArea = document.getElementById('result-area');
+        const questionNumberEl = document.getElementById('question-number');
+        const questionTextEl = document.getElementById('question-text');
+        const trueBtn = document.getElementById('true-btn');
+        const falseBtn = document.getElementById('false-btn');
+        const feedbackArea = document.getElementById('feedback-area');
+        const feedbackMessageEl = document.getElementById('feedback-message');
+        const nextBtn = document.getElementById('next-btn');
+        const finalScoreEl = document.getElementById('final-score');
+        const scoreCommentEl = document.getElementById('score-comment');
+
+        // --- Core Functions ---
+
+        /**
+         * Initializes the game state and displays the first question.
+         */
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizArea.classList.remove('hidden');
+            resultArea.classList.add('hidden');
+            loadQuestion();
+        }
+
+        /**
+         * Loads the current question into the display.
+         */
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                return finishGame();
+            }
+
+            const currentQ = questions[currentQuestionIndex];
+
+            // Reset UI
+            feedbackArea.classList.add('hidden');
+            feedbackMessageEl.innerHTML = '';
+            trueBtn.disabled = false;
+            falseBtn.disabled = false;
+            trueBtn.classList.remove('opacity-50');
+            falseBtn.classList.remove('opacity-50');
+
+            // Update question display
+            questionNumberEl.textContent = `Question ${currentQuestionIndex + 1} / ${questions.length}`;
+            questionTextEl.textContent = currentQ.text;
+        }
+
+        /**
+         * Handles the user clicking True or False.
+         * @param {boolean} userChoice - The user's answer (true or false).
+         */
+        function checkAnswer(userChoice) {
+            const currentQ = questions[currentQuestionIndex];
+            const isCorrect = userChoice === currentQ.answer;
+
+            // Disable buttons after selection
+            trueBtn.disabled = true;
+            falseBtn.disabled = true;
+
+            // Show feedback
+            feedbackArea.classList.remove('hidden');
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('opacity-50');
+
+            if (isCorrect) {
+                score++;
+                feedbackMessageEl.className = 'feedback-box text-sm text-gray-800 correct';
+                feedbackMessageEl.innerHTML = `✅ **Correct!** <br> ${currentQ.explanation}`;
+            } else {
+                feedbackMessageEl.className = 'feedback-box text-sm text-gray-800 incorrect';
+                feedbackMessageEl.innerHTML = `❌ **Incorrect.** <br> The correct answer was **${currentQ.answer ? 'True' : 'False'}**. <br> ${currentQ.explanation}`;
+            }
+        }
+
+        /**
+         * Moves to the next question or finishes the game.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50');
+            loadQuestion();
+        }
+
+        /**
+         * Displays the final score and result screen.
+         */
+        function finishGame() {
+            quizArea.classList.add('hidden');
+            resultArea.classList.remove('hidden');
+
+            const percentage = (score / questions.length) * 100;
+            finalScoreEl.textContent = `Score: ${score} / ${questions.length}`;
+
+            let comment;
+            if (percentage === 100) {
+                comment = "Incredible! You are a master of history and a true patriot!";
+            } else if (percentage >= 70) {
+                comment = "Great job! You have a strong knowledge of these historical figures.";
+            } else if (percentage >= 40) {
+                comment = "Keep studying! You're off to a good start, but there's more to learn.";
+            } else {
+                comment = "Don't worry! History takes time to master. Try playing again!";
+            }
+            scoreCommentEl.textContent = comment;
+        }
+
+        // Start the game when the script loads
+        window.onload = startGame;
+    </script>
+
+</body>
+</html>
