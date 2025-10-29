@@ -31,11 +31,10 @@
             padding: 20px;
             box-sizing: border-box;
             
-            /* REMOVED: background-image URL and attachment */
             position: relative;
         }
 
-        /* --- NEW EMOJI BACKGROUND AND OVERLAY COMBINED --- */
+        /* --- EMOJI BACKGROUND AND OVERLAY COMBINED --- */
         body::before {
             /* Repeating pattern of Kabaddi/sports emojis */
             content: "🏃‍♂️🤼🏆🇮🇳🥇🎯🔥🚩🏃‍♂️🤼🏆🇮🇳🥇🎯🔥🚩"; 
@@ -67,7 +66,8 @@
             width: 100%;
             max-width: 700px;
             background-color: var(--bg-medium);
-            padding: 30px;
+            /* Reduced bottom padding for compactness */
+            padding: 30px 30px 20px; 
             border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
             text-align: center;
@@ -133,13 +133,15 @@
             font-weight: 600;
         }
 
+        /* --- UPDATED OPTIONS CONTAINER FOR 2-COLUMN LAYOUT --- */
         #options-container {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Two equal columns */
             gap: 15px;
             width: 100%;
             margin-bottom: 25px;
         }
+        /* --------------------------------------------------- */
 
         .option-btn {
             background-color: var(--bg-light);
@@ -256,6 +258,10 @@
             .btn { padding: 10px 20px; font-size: 1rem; }
             #score-display { font-size: 1.5rem; }
             #result-message { font-size: 1rem; }
+            /* FORCE single column for small screens */
+            #options-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
     
