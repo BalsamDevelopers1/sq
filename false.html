@@ -171,10 +171,10 @@
         <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-4">
             Freedom Fighters Quiz
         </h1>
-        <p class="text-center text-gray-500 mb-8">True or False facts about the icons of independence.</p>
+        <p class="text-center text-gray-500 mb-8">Test your knowledge with 5 sets of 20 questions each!</p>
 
         <!-- Quiz Area --><div id="quiz-area">
-            <div id="question-number" class="text-lg font-semibold text-indigo-600 mb-2">Question 1 / 10</div>
+            <div id="question-number" class="text-lg font-semibold text-indigo-600 mb-2">Question 1 / 100</div>
             <div id="question-text" class="text-2xl font-bold text-gray-900 mb-8">
                 Loading question...
             </div>
@@ -186,71 +186,131 @@
 
             <!-- Feedback and Next Button Area --><div id="feedback-area" class="mt-4 hidden">
                 <div id="feedback-message" class="feedback-box text-sm text-gray-800"></div>
-                <button id="next-btn" class="btn btn-neutral w-full mt-4 disabled:opacity-50 disabled:cursor-not-allowed" onclick="nextQuestion()">Next Question</button>
+                <!-- Next button dynamically changes text to "Next Question" or "Start Next Set" --><button id="next-btn" class="btn btn-neutral w-full mt-4 disabled:opacity-50 disabled:cursor-not-allowed" onclick="nextQuestion()">Next Question</button>
             </div>
         </div>
 
         <!-- Score/Result Area --><div id="result-area" class="text-center hidden">
             <h2 class="text-4xl font-extrabold text-gray-800 mb-4">Quiz Finished!</h2>
-            <p id="final-score" class="text-5xl font-black text-indigo-600 mb-6">Score: 0 / 10</p>
+            <p id="final-score" class="text-5xl font-black text-indigo-600 mb-6">Score: 0 / 100</p>
             <p id="score-comment" class="text-xl text-gray-600 mb-8"></p>
             <button class="btn btn-true w-full" onclick="startGame()">Play Again</button>
         </div>
     </div>
 
     <script>
-        // --- Game Data ---
+        // --- Constants for Set Structure ---
+        const TOTAL_QUESTIONS = 100;
+        const QUESTIONS_PER_SET = 20;
+        const TOTAL_SETS = TOTAL_QUESTIONS / QUESTIONS_PER_SET;
+        
+        // --- Game Data (100 Questions) ---
         const questions = [
-            {
-                text: "Mahatma Gandhi was known as the 'Iron Man of India'.",
-                answer: false,
-                explanation: "False. Sardar Vallabhbhai Patel was known as the 'Iron Man of India' for his role in consolidating princely states. Mahatma Gandhi is known as the 'Father of the Nation'."
-            },
-            {
-                text: "Subhas Chandra Bose formed the Indian National Army (INA) to fight for India's freedom through armed forces.",
-                answer: true,
-                explanation: "True. Subhas Chandra Bose, or 'Netaji', founded the INA and famously gave the call: 'Give me blood, and I will give you freedom'."
-            },
-            {
-                text: "Rani Lakshmi Bai was a key leader during the Revolt of 1857.",
-                answer: true,
-                explanation: "True. Rani Lakshmi Bai of Jhansi fought valiantly against British forces in 1857 to protect her kingdom, becoming a powerful symbol of resistance."
-            },
-            {
-                text: "Bhagat Singh was known for his policy of strict non-violence (Satyagraha) throughout his career.",
-                answer: false,
-                explanation: "False. Bhagat Singh was a revolutionary figure who protested British oppression through direct actions, including the bombing of the Central Legislative Assembly, contrasting with Gandhi's non-violent approach."
-            },
-            {
-                text: "Lala Lajpat Rai was nicknamed the 'Lion of Punjab'.",
-                answer: true,
-                explanation: "True. Lala Lajpat Rai was nicknamed the 'Lion of Punjab' (or 'Punjab Kesari') and was a prominent figure who protested colonial policies."
-            },
-            {
-                text: "Jawaharlal Nehru was India's first Education Minister, not its first Prime Minister.",
-                answer: false,
-                explanation: "False. Jawaharlal Nehru was both the first Prime Minister of India and an important leader who helped draft the country's independence."
-            },
-            {
-                text: "The slogan 'Swaraj is my birthright, and I shall have it!' was popularized by Bal Gangadhar Tilak.",
-                answer: true,
-                explanation: "True. Bal Gangadhar Tilak, known as the 'Father of Indian Unrest,' popularized this powerful slogan."
-            },
-            {
-                text: "Chandra Shekhar Azad vowed to never be caught alive by the British police.",
-                answer: true,
-                explanation: "True. He was a fearless revolutionary who kept this promise, ultimately sacrificing his life in a gun battle in a park in Allahabad (now Prayagraj)."
-            },
-            {
-                text: "Aruna Asaf Ali is best remembered for hoisting the Indian flag in Mumbai during the Non-Cooperation Movement in 1920.",
-                answer: false,
-                explanation: "False. Aruna Asaf Ali's famous act was hoisting the flag during the **Quit India Movement** in 1942, not the Non-Cooperation Movement of the 1920s."
-            },
-            {
-                text: "Mangal Pandey's actions are often cited as sparking the First War of Independence in 1857.",
-                answer: true,
-                explanation: "True. Mangal Pandey, a sepoy in the British East India Company's army, is widely credited with sparking the initial unrest that grew into the Revolt of 1857."
-            }
+            // --- Set 1 (Questions 1 - 20) ---
+            { text: "Mahatma Gandhi was known as the 'Iron Man of India'.", answer: false, explanation: "False. Sardar Vallabhbhai Patel was known as the 'Iron Man of India'." },
+            { text: "Subhas Chandra Bose formed the Indian National Army (INA) to fight for India's freedom through armed forces.", answer: true, explanation: "True. Subhas Chandra Bose, or 'Netaji', founded the INA." },
+            { text: "Rani Lakshmi Bai was a key leader during the Revolt of 1857.", answer: true, explanation: "True. Rani Lakshmi Bai of Jhansi fought valiantly against British forces in 1857." },
+            { text: "Bhagat Singh was known for his policy of strict non-violence (Satyagraha) throughout his career.", answer: false, explanation: "False. Bhagat Singh was a revolutionary figure who believed in direct action." },
+            { text: "Lala Lajpat Rai was nicknamed the 'Lion of Punjab'.", answer: true, explanation: "True. Lala Lajpat Rai was nicknamed the 'Lion of Punjab' (or 'Punjab Kesari')." },
+            { text: "Jawaharlal Nehru was India's first Education Minister, not its first Prime Minister.", answer: false, explanation: "False. Jawaharlal Nehru was the first Prime Minister of India." },
+            { text: "The slogan 'Swaraj is my birthright, and I shall have it!' was popularized by Bal Gangadhar Tilak.", answer: true, explanation: "True. Bal Gangadhar Tilak popularized this powerful slogan." },
+            { text: "Chandra Shekhar Azad vowed to never be caught alive by the British police.", answer: true, explanation: "True. He sacrificed his life in a gun battle to keep this promise." },
+            { text: "Aruna Asaf Ali is best remembered for hoisting the Indian flag in Mumbai during the Non-Cooperation Movement in 1920.", answer: false, explanation: "False. Her famous act was hoisting the flag during the Quit India Movement in 1942." },
+            { text: "Mangal Pandey's actions are often cited as sparking the First War of Independence in 1857.", answer: true, explanation: "True. Mangal Pandey is widely credited with sparking the initial unrest of the Revolt of 1857." },
+            { text: "The Jallianwala Bagh massacre occurred in 1919 in Amritsar.", answer: true, explanation: "True. This tragic event occurred on April 13, 1919." },
+            { text: "The Non-Cooperation Movement was launched by Mahatma Gandhi in 1942.", answer: false, explanation: "False. The Non-Cooperation Movement was launched in 1920 (the Quit India Movement was in 1942)." },
+            { text: "The Simon Commission was appointed to review the working of the Government of India Act of 1919.", answer: true, explanation: "True. The commission was established for this review, leading to widespread boycotts." },
+            { text: "Muhammad Ali Jinnah initially supported the concept of a united India.", answer: true, explanation: "True. He was initially a strong proponent of Hindu-Muslim unity before shifting his stance." },
+            { text: "Dadabhai Naoroji was famously known as the Grand Old Man of India.", answer: true, explanation: "True. Naoroji was a key early leader and economist." },
+            { text: "The Quit India Movement was also known as the August Kranti.", answer: true, explanation: "True. It began in August 1942." },
+            { text: "Sarojini Naidu was the first Indian woman to become the President of the Indian National Congress.", answer: true, explanation: "True. She presided over the Kanpur session in 1925." },
+            { text: "The Partition of Bengal took place in 1905 under Lord Curzon.", answer: true, explanation: "True. This event triggered the Swadeshi Movement." },
+            { text: "B.R. Ambedkar was the Chairman of the Drafting Committee of the Constituent Assembly.", answer: true, explanation: "True. He is recognized as the chief architect of the Indian Constitution." },
+            { text: "Gopal Krishna Gokhale was the political mentor of Subhas Chandra Bose.", answer: false, explanation: "False. Gokhale was the political mentor of Mahatma Gandhi." },
+            // --- Set 2 (Questions 21 - 40) ---
+            { text: "Annie Besant was the founder of the Indian National Congress.", answer: false, explanation: "False. The INC was founded by A. O. Hume." },
+            { text: "Khudiram Bose was one of the youngest revolutionaries to be executed by the British.", answer: true, explanation: "True. He was executed at the age of 18." },
+            { text: "The Lahore Session of the Indian National Congress in 1929 demanded 'Purna Swaraj' (Complete Independence).", answer: true, explanation: "True. This was a crucial turning point under the presidency of Jawaharlal Nehru." },
+            { text: "Vinayak Damodar Savarkar founded the Abhinav Bharat Society.", answer: true, explanation: "True. This secret society was dedicated to overthrowing British rule." },
+            { text: "Begum Hazrat Mahal led the rebels in Lucknow during the Revolt of 1857.", answer: true, explanation: "True. She was a prominent leader of the rebellion." },
+            { text: "Pherozeshah Mehta was a key leader of the extremist faction of the Congress.", answer: false, explanation: "False. He was a leader of the Moderate faction." },
+            { text: "The Mountbatten Plan outlined the partition of British India into India and Pakistan.", answer: true, explanation: "True. The plan was formally announced in June 1947." },
+            { text: "The Salt Satyagraha (Dandi March) began from Sabarmati Ashram.", answer: true, explanation: "True. Gandhi began his march from his ashram in Ahmedabad." },
+            { text: "C. Rajagopalachari was the first Governor-General of independent India.", answer: false, explanation: "False. Lord Mountbatten was the first; Rajagopalachari was the last Governor-General." },
+            { text: "Ram Prasad Bismil was associated with the Kakori Conspiracy.", answer: true, explanation: "True. He was a key member of the Hindustan Republican Association involved in the train robbery." },
+            { text: "The Poona Pact of 1932 was signed between Gandhi and Jinnah.", answer: false, explanation: "False. It was signed between Mahatma Gandhi and B. R. Ambedkar." },
+            { text: "The title 'Sardar' was bestowed upon Vallabhbhai Patel by the women of Bardoli.", answer: true, explanation: "True. It recognized his successful leadership of the Bardoli Satyagraha." },
+            { text: "Bal Gangadhar Tilak launched the Home Rule Movement in collaboration with Annie Besant.", answer: true, explanation: "True. They led separate but allied Home Rule Leagues." },
+            { text: "Surendranath Banerjee founded the Indian Association in 1876.", answer: true, explanation: "True. This was one of the first nationalist organizations of British India." },
+            { text: "The First Round Table Conference took place in London in 1930.", answer: true, explanation: "True. The Congress boycotted this first conference." },
+            { text: "Ashfaqulla Khan was a poet and revolutionary who participated in the Kakori incident.", answer: true, explanation: "True. He was a close associate of Ram Prasad Bismil." },
+            { text: "The 'Do or Die' call was given during the Quit India Movement.", answer: true, explanation: "True. It was Gandhi's powerful instruction to the nation in 1942." },
+            { text: "Rajguru was executed along with Bhagat Singh and Sukhdev.", answer: true, explanation: "True. The three revolutionaries were executed together in March 1931." },
+            { text: "The Chauri Chaura incident led to the immediate end of the Civil Disobedience Movement.", answer: false, explanation: "False. It led to the end of the Non-Cooperation Movement in 1922." },
+            { text: "Lord Canning was the Governor-General of India during the Revolt of 1857.", answer: true, explanation: "True. He later became the first Viceroy of India." },
+            // --- Set 3 (Questions 41 - 60) ---
+            { text: "Mangal Pandey was hanged for attacking his senior officers at Barrackpore.", answer: true, explanation: "True. His rebellion was a precursor to the main Revolt of 1857." },
+            { text: "The Indian Independence Act was passed by the British Parliament in July 1947.", answer: true, explanation: "True. It formally brought an end to British rule." },
+            { text: "Kanhoji Angre was a famous Maratha naval commander who fought the British.", answer: true, explanation: "True. His navy effectively challenged British maritime power on the Konkan coast." },
+            { text: "The Wahabi Movement aimed to purify Islam and was a struggle against foreign rule.", answer: true, explanation: "True. It was an important religious and political movement." },
+            { text: "The Ghadar Party was founded in India to lead a revolt against the British.", answer: false, explanation: "False. It was founded by Indians primarily in the United States and Canada." },
+            { text: "The Cripps Mission visited India in 1946 to discuss constitutional reforms.", answer: false, explanation: "False. The Cripps Mission came in 1942; the Cabinet Mission came in 1946." },
+            { text: "Khan Abdul Ghaffar Khan was popularly known as the 'Frontier Gandhi'.", answer: true, explanation: "True. He was known for his non-violent struggle on the North-West Frontier." },
+            { text: "V. O. Chidambaram Pillai was known as 'Kappalottiya Thamizhan' (The Tamil Helmsman).", answer: true, explanation: "True. He launched the Swadeshi Steam Navigation Company." },
+            { text: "The Battle of Plassey, which marked the beginning of British rule, was fought in 1757.", answer: true, explanation: "True. This victory for the British East India Company was pivotal." },
+            { text: "Lord Dalhousie introduced the Doctrine of Lapse policy.", answer: true, explanation: "True. This policy led to the annexation of many Indian states." },
+            { text: "The Moderates believed in constitutional agitation and dialogue with the British.", answer: true, explanation: "True. They used petitions, speeches, and legal means." },
+            { text: "The revolutionary movement in Bengal was started by Aurobindo Ghosh.", answer: true, explanation: "True. He was a key figure in the early nationalist movement in Bengal." },
+            { text: "The Swadeshi Movement was a consequence of the partition of Bengal.", answer: true, explanation: "True. It promoted the use of native products and boycott of foreign goods." },
+            { text: "Queen Victoria was proclaimed Empress of India in 1876.", answer: true, explanation: "True. This solidified the British Raj's power." },
+            { text: "Madam Bhikaji Cama unfurled the first version of the Indian flag in Paris.", answer: false, explanation: "False. She unfurled it at the International Socialist Conference in Stuttgart, Germany." },
+            { text: "The Ilbert Bill controversy involved the right of Indian judges to try European subjects.", answer: true, explanation: "True. This caused a huge backlash from the European community." },
+            { text: "The Rowlatt Act (1919) allowed the British to imprison suspects without trial.", answer: true, explanation: "True. This act was widely opposed by Indians." },
+            { text: "The Cabinet Mission Plan was sent to India in 1942.", answer: false, explanation: "False. The Cabinet Mission came in 1946 to discuss the transfer of power." },
+            { text: "Udham Singh assassinated Michael O'Dwyer to avenge the Jallianwala Bagh massacre.", answer: true, explanation: "True. He shot O'Dwyer in London in 1940." },
+            { text: "The title 'Father of Modern India' is often given to Raja Ram Mohan Roy.", answer: true, explanation: "True. He was a social and religious reformer." },
+            // --- Set 4 (Questions 61 - 80) ---
+            { text: "The Permanent Settlement of 1793 was introduced by Lord Cornwallis.", answer: true, explanation: "True. This system fixed the land revenue to be paid by zamindars." },
+            { text: "Annie Besant was born in India.", answer: false, explanation: "False. She was born in London." },
+            { text: "The Dandi March was undertaken to oppose the high tax on salt.", answer: true, explanation: "True. It was a protest against the British salt monopoly." },
+            { text: "Bipin Chandra Pal was part of the trio 'Lal Bal Pal'.", answer: true, explanation: "True. The trio was Lala Lajpat Rai, Bal Gangadhar Tilak, and Bipin Chandra Pal (the Extremist leaders)." },
+            { text: "The All India Muslim League was founded in Dhaka in 1906.", answer: true, explanation: "True. It was founded to safeguard Muslim interests." },
+            { text: "The concept of 'Total Revolution' was advocated by Jayaprakash Narayan.", answer: true, explanation: "True. His movement aimed for social, economic, and political change." },
+            { text: "The August Offer was proposed by Viceroy Lord Wavell in 1940.", answer: false, explanation: "False. It was proposed by Viceroy Lord Linlithgow." },
+            { text: "The famous book 'Poverty and Un-British Rule in India' was written by Mahatma Gandhi.", answer: false, explanation: "False. It was written by Dadabhai Naoroji." },
+            { text: "Rani Gaidinliu was a spiritual and political leader from Nagaland who fought against the British rule.", answer: true, explanation: "True. She was a revolutionary figure in the North-East." },
+            { text: "The Simon Commission was boycotted because it had no Indian members.", answer: true, explanation: "True. The all-white commission was seen as an insult to Indian self-respect." },
+            { text: "The first session of the Indian National Congress was held in Bombay (Mumbai) in 1885.", answer: true, explanation: "True. It was presided over by W. C. Bonnerjee." },
+            { text: "The Revolt of 1857 is also known as the Sepoy Mutiny.", answer: true, explanation: "True. It started as a mutiny of sepoys of the British East India Company." },
+            { text: "The Bardoli Satyagraha (1928) was a movement against the increase in land revenue.", answer: true, explanation: "True. Vallabhbhai Patel successfully led this movement." },
+            { text: "The idea of Pakistan was first proposed by Muhammad Iqbal.", answer: true, explanation: "True. He articulated the vision of a separate Muslim state." },
+            { text: "Kanaklata Barua, a young female revolutionary, was killed while hoisting the flag during the Quit India Movement.", answer: true, explanation: "True. She was shot dead by police in Assam." },
+            { text: "The Gandhi-Irwin Pact was signed in 1931, ending the Non-Cooperation Movement.", answer: false, explanation: "False. It ended the Civil Disobedience Movement." },
+            { text: "Khudiram Bose threw a bomb at the carriage of Lord Curzon.", answer: false, explanation: "False. He aimed at the carriage of Chief Presidency Magistrate Douglas Kingsford." },
+            { text: "The Sanyasi Rebellion was one of the first peasant rebellions against the British.", answer: true, explanation: "True. It occurred in Bengal in the late 18th century." },
+            { text: "The slogan 'Inquilab Zindabad' was popularized by Bhagat Singh.", answer: true, explanation: "True. Though coined by Maulana Hasrat Mohani, Bhagat Singh popularized it." },
+            { text: "Sarojini Naidu was given the title 'Nightingale of India' (Bharat Kokila) by Rabindranath Tagore.", answer: true, explanation: "True. She was known for her lyrical poetry." },
+            // --- Set 5 (Questions 81 - 100) ---
+            { text: "The Indian Civil Service (ICS) exams were initially held only in India.", answer: false, explanation: "False. They were initially held only in London." },
+            { text: "The Government of India Act of 1935 introduced provincial autonomy.", answer: true, explanation: "True. This was a major feature of the 1935 Act." },
+            { text: "Surya Sen (Masterda) led the Chittagong Armory Raid.", answer: true, explanation: "True. This revolutionary raid took place in 1930." },
+            { text: "Lord Curzon was known for his policy of 'Divide and Rule'.", answer: true, explanation: "True. The Partition of Bengal is a key example." },
+            { text: "The Home Rule Leagues were started in 1916.", answer: true, explanation: "True. They were started by Tilak and Besant." },
+            { text: "Annie Besant was associated with the Theosophical Society.", answer: true, explanation: "True. She became the President of the Society." },
+            { text: "Vinoba Bhave was the first individual Satyagrahi chosen by Mahatma Gandhi in 1940.", answer: true, explanation: "True. This was during the Individual Satyagraha movement." },
+            { text: "The Khilafat Movement was started to support the cause of the Sultan of Turkey.", answer: true, explanation: "True. It was aimed at protecting the authority of the Ottoman Caliph." },
+            { text: "The Santhal Hul (Rebellion) took place in 1855-56 in Bengal and Bihar.", answer: true, explanation: "True. It was a major tribal uprising." },
+            { text: "Subhas Chandra Bose resigned from the post of Congress President in 1939.", answer: true, explanation: "True. He resigned after differences with Gandhi." },
+            { text: "The Bengal Renaissance primarily focused on agrarian reform.", answer: false, explanation: "False. It was an intellectual, social, and religious reform movement." },
+            { text: "Tantia Tope was a general in the Revolt of 1857 who fought alongside Nana Sahib.", answer: true, explanation: "True. He was one of the most effective generals of the revolt." },
+            { text: "The first Indian woman president of the Indian National Congress was Annie Besant.", answer: false, explanation: "False. Sarojini Naidu was the first Indian woman; Annie Besant was the first woman president overall." },
+            { text: "The Partition of India was based on the two-nation theory.", answer: true, explanation: "True. This theory proposed that Hindus and Muslims were two separate nations." },
+            { text: "The word 'Satyagraha' means 'insistence on truth'.", answer: true, explanation: "True. It combines the Sanskrit words *satya* (truth) and *agraha* (insistence)." },
+            { text: "The Vellore Mutiny (1806) was the first major mutiny by Indian soldiers against the British.", answer: true, explanation: "True. It predated the Revolt of 1857." },
+            { text: "Moplah Rebellion of 1921 occurred in the Malabar region of Kerala.", answer: true, explanation: "True. It was initially an agrarian revolt that gained religious overtones." },
+            { text: "Khudiram Bose and Prafulla Chaki attempted to assassinate Viceroy Lord Hardinge.", answer: false, explanation: "False. They attempted to kill Magistrate Douglas Kingsford." },
+            { text: "Maulana Abul Kalam Azad was the President of the Indian National Congress at the time of India's independence.", answer: false, explanation: "False. J. B. Kripalani was the President in August 1947." },
+            { text: "P. V. Narasimha Rao was India's first Prime Minister.", answer: false, explanation: "False. Jawaharlal Nehru was the first Prime Minister." }
         ];
 
         // --- Game State Variables ---
@@ -287,12 +347,16 @@
          * Loads the current question into the display.
          */
         function loadQuestion() {
-            if (currentQuestionIndex >= questions.length) {
+            if (currentQuestionIndex >= TOTAL_QUESTIONS) {
                 return finishGame();
             }
 
             const currentQ = questions[currentQuestionIndex];
-
+            
+            // Calculate set and question number
+            const currentSet = Math.floor(currentQuestionIndex / QUESTIONS_PER_SET) + 1;
+            const questionInSet = (currentQuestionIndex % QUESTIONS_PER_SET) + 1;
+            
             // Reset UI
             feedbackArea.classList.add('hidden');
             feedbackMessageEl.innerHTML = '';
@@ -300,9 +364,16 @@
             falseBtn.disabled = false;
             trueBtn.classList.remove('opacity-50');
             falseBtn.classList.remove('opacity-50');
+            
+            // Ensure next button is reset to default state
+            nextBtn.textContent = "Next Question";
+            nextBtn.classList.remove('btn-true', 'btn-false', 'btn-neutral');
+            nextBtn.classList.add('btn-neutral'); // Default for progression
 
-            // Update question display
-            questionNumberEl.textContent = `Question ${currentQuestionIndex + 1} / ${questions.length}`;
+            // Update question display with set information (removed overall count)
+            questionNumberEl.innerHTML = `
+                <span class="font-bold">Set ${currentSet} / ${TOTAL_SETS}:</span> Question ${questionInSet} / ${QUESTIONS_PER_SET}
+            `;
             questionTextEl.textContent = currentQ.text;
         }
 
@@ -322,6 +393,7 @@
             feedbackArea.classList.remove('hidden');
             nextBtn.disabled = false;
             nextBtn.classList.remove('opacity-50');
+            nextBtn.classList.remove('btn-neutral'); // Remove default before setting set/finish text
 
             if (isCorrect) {
                 score++;
@@ -330,6 +402,24 @@
             } else {
                 feedbackMessageEl.className = 'feedback-box text-sm text-gray-800 incorrect';
                 feedbackMessageEl.innerHTML = `❌ **Incorrect.** <br> The correct answer was **${currentQ.answer ? 'True' : 'False'}**. <br> ${currentQ.explanation}`;
+            }
+            
+            // --- Dynamic Next Button Text Logic ---
+            const questionInSet = (currentQuestionIndex % QUESTIONS_PER_SET) + 1;
+            const currentSet = Math.floor(currentQuestionIndex / QUESTIONS_PER_SET) + 1;
+            
+            if (currentQuestionIndex === TOTAL_QUESTIONS - 1) {
+                // Last question of the entire quiz
+                nextBtn.textContent = "See Final Results";
+                nextBtn.classList.add('btn-true');
+            } else if (questionInSet === QUESTIONS_PER_SET && currentSet < TOTAL_SETS) {
+                // Last question of a middle set
+                nextBtn.textContent = `Start Set ${currentSet + 1} / ${TOTAL_SETS}`;
+                nextBtn.classList.add('btn-neutral'); // Use neutral for set transition
+            } else {
+                // Regular question
+                nextBtn.textContent = "Next Question";
+                nextBtn.classList.add('btn-neutral');
             }
         }
 
@@ -340,6 +430,11 @@
             currentQuestionIndex++;
             nextBtn.disabled = true;
             nextBtn.classList.add('opacity-50');
+            
+            if (currentQuestionIndex >= TOTAL_QUESTIONS) {
+                return finishGame();
+            }
+            
             loadQuestion();
         }
 
@@ -350,18 +445,18 @@
             quizArea.classList.add('hidden');
             resultArea.classList.remove('hidden');
 
-            const percentage = (score / questions.length) * 100;
-            finalScoreEl.textContent = `Score: ${score} / ${questions.length}`;
+            const percentage = (score / TOTAL_QUESTIONS) * 100;
+            finalScoreEl.textContent = `Score: ${score} / ${TOTAL_QUESTIONS}`;
 
             let comment;
-            if (percentage === 100) {
-                comment = "Incredible! You are a master of history and a true patriot!";
+            if (percentage >= 90) {
+                comment = "Patriotic Genius! Your knowledge of the freedom struggle is phenomenal!";
             } else if (percentage >= 70) {
-                comment = "Great job! You have a strong knowledge of these historical figures.";
-            } else if (percentage >= 40) {
-                comment = "Keep studying! You're off to a good start, but there's more to learn.";
+                comment = "Excellent! You have a great understanding of these historical icons and events.";
+            } else if (percentage >= 50) {
+                comment = "Good effort! You've grasped the key facts, but there's plenty more to discover.";
             } else {
-                comment = "Don't worry! History takes time to master. Try playing again!";
+                comment = "Keep learning! The history of the freedom movement is vast and fascinating. Try playing again!";
             }
             scoreCommentEl.textContent = comment;
         }
