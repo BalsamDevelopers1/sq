@@ -1,0 +1,658 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Quiz Challenge</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Modern Design Tokens (CSS Variables) for easy theming */
+        :root {
+            --primary-accent: #10b981; /* Emerald Green */
+            --correct-color: #10b981;
+            --wrong-color: #ef4444;
+            --dark-background: #0d1a26; 
+            --card-gradient-start: #1e3a4e;
+            --card-gradient-end: #142a3a;
+        }
+
+        /* Custom font and base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-background); 
+        }
+        .quiz-container {
+            max-width: 600px;
+            min-height: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); /* Deeper shadow */
+            background: linear-gradient(145deg, var(--card-gradient-start), var(--card-gradient-end)); 
+            z-index: 10;
+            position: relative;
+        }
+        .option-button {
+            /* Better default button style with subtle 3D effect */
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border-bottom: 4px solid #1e40af; /* Darker blue border */
+        }
+        .option-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+            background-color: #2c5282;
+            border-bottom-width: 1px;
+        }
+        /* New styling for pre-selected option when navigating */
+        .selected-option {
+            transform: scale(1.02); 
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); 
+            background-color: #4a5568 !important; /* Gray/Selected look */
+            border-bottom: 4px solid #a0aec0;
+        }
+        .correct-answer {
+            background-color: var(--correct-color) !important;
+            color: #1f2937 !important;
+            font-weight: bold;
+            pointer-events: none;
+            transform: scale(1.02); /* Pop on correct answer */
+            box-shadow: 0 0 15px var(--correct-color); /* Green glow */
+            border-bottom: 4px solid #065f46;
+        }
+        .wrong-answer {
+            background-color: var(--wrong-color) !important;
+            color: #ffffff !important;
+            font-weight: bold;
+            pointer-events: none;
+            box-shadow: 0 0 10px var(--wrong-color); /* Red glow */
+            border-bottom: 4px solid #991b1b;
+        }
+        .neon-text {
+            color: var(--primary-accent);
+            text-shadow: 0 0 8px var(--primary-accent), 0 0 15px rgba(16, 185, 129, 0.6);
+        }
+        .progress-bar-fill {
+            transition: width 0.5s ease-out; /* Smooth progress transition */
+            background-color: var(--primary-accent);
+        }
+        .category-button {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .category-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* Emoji Background Overlay */
+        .emoji-background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            opacity: 0.1; /* Reduced opacity */
+            color: #4a5568; 
+            overflow: hidden;
+            z-index: 1;
+            font-size: 3.5rem; 
+        }
+        .emoji-background-overlay span {
+            padding: 10px 20px;
+            user-select: none; 
+            position: absolute; 
+        }
+
+        /* --- RAINBOW EFFECT CSS --- */
+        .rainbow-effect {
+            font-weight: bold;
+            font-size: 0.8rem; /* Slightly larger for visibility */
+            /* Gradient for the rainbow effect */
+            background-image: linear-gradient(
+                to right,
+                #FF0000, /* Red */
+                #FFA500, /* Orange */
+                #FFFF00, /* Yellow */
+                #008000, /* Green */
+                #0000FF, /* Blue */
+                #4B0082, /* Indigo */
+                #EE82EE /* Violet */
+            );
+            /* Clip the background to the text */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text; /* Standard property */
+            color: transparent; /* Fallback */
+            
+            /* Optional: Add subtle animated shadow */
+            animation: subtle-glow 3s infinite alternate;
+        }
+
+        @keyframes subtle-glow {
+            from {
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+            }
+            to {
+                /* Subtle blend of colors */
+                text-shadow: 0 0 8px rgba(255, 0, 0, 0.5), 0 0 10px rgba(0, 255, 0, 0.5), 0 0 12px rgba(0, 0, 255, 0.5); 
+            }
+        }
+        /* --- END RAINBOW EFFECT CSS --- */
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Emoji Background Overlay --><div id="emoji-bg-overlay" class="emoji-background-overlay"></div>
+
+    <div id="quiz-container" class="quiz-container w-full p-6 sm:p-10 rounded-xl border-t-4 border-green-500 text-white flex flex-col">
+
+        <!-- Header --><h1 class="text-3xl sm:text-4xl font-extrabold text-center mb-6 neon-text">
+            The Ultimate Cricket Quiz
+        </h1>
+        
+        <!-- START SCREEN --><div id="start-screen" class="flex flex-col items-center justify-center flex-grow p-4">
+            <h2 class="text-2xl font-semibold mb-8 text-gray-100 text-center">
+                Choose Your Format Challenge
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                <button onclick="startGame('TEST')" class="category-button p-4 rounded-lg text-center bg-red-700 hover:bg-red-800 text-white font-bold text-xl shadow-xl">
+                    🏏 Test Cricket
+                    <p class="text-sm font-normal mt-1 opacity-80">(Long format history & rules)</p>
+                </button>
+                <button onclick="startGame('ODI')" class="category-button p-4 rounded-lg text-center bg-blue-700 hover:bg-blue-800 text-white font-bold text-xl shadow-xl">
+                    🏆 ODI (50 Overs)
+                    <p class="text-sm font-normal mt-1 opacity-80">(World Cups & classic records)</p>
+                </button>
+                <button onclick="startGame('IPL')" class="category-button p-4 rounded-lg text-center bg-yellow-600 hover:bg-yellow-700 text-gray-900 font-bold text-xl shadow-xl">
+                    💰 IPL
+                    <p class="text-sm font-normal mt-1 opacity-80">(League records & franchises)</p>
+                </button>
+                <button onclick="startGame('T20/General')" class="category-button p-4 rounded-lg text-center bg-green-600 hover:bg-green-700 text-white font-bold text-xl shadow-xl">
+                    ⚡ T20 / General
+                    <p class="text-sm font-normal mt-1 opacity-80">(Fast format & general rules)</p>
+                </button>
+            </div>
+            <p class="text-sm text-gray-400 mt-6">
+                You will receive a randomized set of questions from the chosen category. Good luck!
+            </p>
+        </div>
+
+        <!-- QUIZ SCREEN --><div id="quiz-screen" class="hidden flex-col flex-grow">
+            <!-- Header (Score, Counter, Return Button) --><div class="flex justify-between items-center text-base sm:text-lg font-semibold mb-6 p-3 rounded-lg bg-gray-800/50 border border-gray-700">
+                <span id="score-display" class="text-yellow-400">Score: 0</span>
+                <span id="q-counter" class="text-gray-300 text-sm sm:text-base"></span>
+                <button id="return-button" onclick="showStartScreen()" class="py-1 px-3 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg shadow-md transition duration-150">
+                    Return to Levels
+                </button>
+            </div>
+            
+            <!-- MODERN UX ELEMENT: PROGRESS BAR --><div class="w-full h-2 bg-gray-700 rounded-full mb-6 overflow-hidden">
+                <div id="progress-bar" class="progress-bar-fill h-full rounded-full" style="width: 0%;"></div>
+            </div>
+
+            <!-- Question Area --><div id="question-area" class="flex-grow">
+                <p id="question-text" class="text-xl sm:text-2xl font-medium mb-8 text-gray-100">
+                    Loading question...
+                </p>
+
+                <!-- Options Grid --><div id="options-container" class="grid grid-cols-2 gap-4">
+                    <!-- Buttons will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Feedback and Controls --><div class="mt-8 pt-4 border-t border-gray-700">
+                <div id="feedback-message" class="text-center text-lg font-bold mb-4 min-h-[1.5rem]">
+                    <!-- Feedback (Correct/Wrong) will appear here -->
+                </div>
+                
+                <!-- NAVIGATION BUTTONS --><div class="flex justify-between space-x-4">
+                    <button id="nav-prev-button" onclick="previousQuestion()" 
+                            class="w-1/2 py-3 px-6 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg shadow-lg disabled:opacity-50 transition duration-200" disabled>
+                        Previous Delivery
+                    </button>
+                    <button id="nav-next-button" onclick="nextQuestion()" 
+                            class="w-1/2 py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg disabled:opacity-50 transition duration-200" disabled>
+                        Next Delivery
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FOOTER ADDED HERE, TEXT WRAPPED IN RAINBOW SPAN --><footer class="mt-8 pt-4 border-t border-gray-800/50 text-center text-xs">
+            <span class="rainbow-effect">Developed by Surendar Nath (G7A)</span>
+        </footer>
+    </div>
+
+    <script>
+        // --- Quiz Data (105 Questions) ---
+        // Categories: TEST, ODI, IPL, T20/General
+        const quizData = [
+            { question: "Which country won the inaugural ICC T20 World Cup in 2007?", options: ["Australia", "India", "Pakistan", "West Indies"], answer: "India", category: "T20/General" },
+            { question: "What is the nickname of the Australian men's cricket team?", options: ["The Lions", "The Proteas", "The Baggy Greens", "The Black Caps"], answer: "The Baggy Greens", category: "T20/General" },
+            { question: "How many balls are in a standard over in Test cricket?", options: ["4", "6", "8", "10"], answer: "6", category: "TEST" },
+            { question: "Who holds the record for the most wickets in Test cricket history?", options: ["Muttiah Muralitharan", "Shane Warne", "Anil Kumble", "James Anderson"], answer: "Muttiah Muralitharan", category: "TEST" },
+            { question: "The Ashes series is contested between which two nations?", options: ["India and Pakistan", "England and Australia", "South Africa and New Zealand", "Sri Lanka and Bangladesh"], answer: "England and Australia", category: "TEST" },
+            { question: "Who scored the fastest double century in Test cricket?", options: ["Brendon McCullum", "Sir Vivian Richards", "Virender Sehwag", "Brian Lara"], answer: "Brendon McCullum", category: "TEST" },
+            { question: "Which ground is known as the 'Home of Cricket'?", options: ["Eden Gardens", "Melbourne Cricket Ground", "Lord's", "The Oval"], answer: "Lord's", category: "T20/General" },
+            { question: "What is the term for a bowler taking three wickets on consecutive deliveries?", options: ["Hat-trick", "Five-for", "Wicket-maiden", "Bumper"], answer: "Hat-trick", category: "T20/General" },
+            { question: "Which bowler has taken 10 wickets in a single Test innings?", options: ["Anil Kumble", "Jim Laker", "Shane Warne", "Wasim Akram"], answer: "Jim Laker", category: "TEST" },
+            { question: "The 'Dilscoop' shot was popularized by which cricketer?", options: ["AB de Villiers", "Tillakaratne Dilshan", "Kevin Pietersen", "Rashid Khan"], answer: "Tillakaratne Dilshan", category: "T20/General" },
+            { question: "Which country won the 2019 ICC Cricket World Cup?", options: ["India", "New Zealand", "England", "Australia"], answer: "England", category: "ODI" },
+            { question: "Who was the first player to score 10,000 runs in ODI cricket?", options: ["Sachin Tendulkar", "Brian Lara", "Sunil Gavaskar", "Javed Miandad"], answer: "Sachin Tendulkar", category: "ODI" },
+            { question: "What colored clothing is typically worn in Test matches?", options: ["Colored", "White or Cream", "Black", "Blue"], answer: "White or Cream", category: "TEST" },
+            { question: "What is the maximum distance a boundary rope can be from the pitch?", options: ["90 yards", "80 yards", "75 yards", "85 yards"], answer: "90 yards", category: "TEST" },
+            { question: "Which Indian player is known as 'The Wall'?", options: ["Rahul Dravid", "Sourav Ganguly", "VVS Laxman", "Anil Kumble"], answer: "Rahul Dravid", category: "T20/General" },
+            { question: "How many teams participated in the first ever Cricket World Cup (1975)?", options: ["6", "8", "10", "12"], answer: "8", category: "ODI" },
+            { question: "Who is the only player to have scored a century in his 100th Test match?", options: ["Ricky Ponting", "Joe Root", "Hashim Amla", "Inzamam-ul-Haq"], answer: "Joe Root", category: "TEST" },
+            { question: "Which fielding position is closest to the batsman on the leg side?", options: ["Slip", "Gully", "Silly Mid-Off", "Short Leg"], answer: "Short Leg", category: "T20/General" },
+            { question: "What is the full form of DRS?", options: ["Decision Review System", "Data Review System", "Designated Review System", "Detailed Ruling System"], answer: "Decision Review System", category: "TEST" },
+            { question: "Which legendary West Indies batsman holds the record for the highest individual score in Test cricket (400*)?", options: ["Sir Vivian Richards", "Chris Gayle", "Brian Lara", "Clive Lloyd"], answer: "Brian Lara", category: "TEST" },
+            { question: "Who was the captain of the Indian team that won the 1983 World Cup?", options: ["Kapil Dev", "Sunil Gavaskar", "Mohinder Amarnath", "Ravi Shastri"], answer: "Kapil Dev", category: "ODI" },
+            { question: "What is a 'Yorker'?", options: ["A ball that bounces high", "A full-toss ball", "A delivery that lands right at the batsman's feet", "A slow ball"], answer: "A delivery that lands right at the batsman's feet", category: "T20/General" },
+            { question: "Which Australian fast bowler is known by the nickname 'Pigeon'?", options: ["Glenn McGrath", "Brett Lee", "Dennis Lillee", "Mitchell Starc"], answer: "Glenn McGrath", category: "TEST" },
+            { question: "In T20 cricket, how many overs can one bowler bowl maximum?", options: ["3", "4", "5", "6"], answer: "4", category: "T20/General" },
+            { question: "What is the highest team total ever scored in a single day of a Test match?", options: ["588", "509", "570", "560"], answer: "588", category: "TEST" },
+            { question: "Which country is known as the inventor of the limited-overs format (ODI)?", options: ["Australia", "South Africa", "England", "New Zealand"], answer: "England", category: "ODI" },
+            { question: "Who has the most centuries in Test cricket?", options: ["Ricky Ponting", "Jacques Kallis", "Sachin Tendulkar", "Virat Kohli"], answer: "Sachin Tendulkar", category: "TEST" },
+            { question: "What is the term for a batsman being out without scoring any runs?", options: ["Duck", "Golden Duck", "Royal Duck", "Platinum Duck"], answer: "Duck", category: "T20/General" },
+            { question: "Which Indian city hosts the M. A. Chidambaram Stadium?", options: ["Mumbai", "Kolkata", "Chennai", "Bangalore"], answer: "Chennai", category: "T20/General" },
+            { question: "The 'Leg Before Wicket' is commonly abbreviated as what?", options: ["LBW", "LBG", "LBK", "LBT"], answer: "LBW", category: "TEST" },
+            { question: "Who was the first batsman to score a double century in ODI cricket?", options: ["Sachin Tendulkar", "Rohit Sharma", "Virender Sehwag", "Chris Gayle"], answer: "Sachin Tendulkar", category: "ODI" },
+            { question: "Which award is given to the best performing player in a series?", options: ["Man of the Match", "Player of the Series", "Golden Bat", "Golden Ball"], answer: "Player of the Series", category: "ODI" },
+            { question: "What is a 'Doosra' ball?", options: ["A fast bouncer", "A googly bowled by an off-spinner", "A ball that swings late", "A slow off-cutter"], answer: "A googly bowled by an off-spinner", category: "T20/General" },
+            { question: "Which South African cricketer is nicknamed 'The AB's'?", options: ["Jacques Kallis", "Graeme Smith", "AB de Villiers", "Dale Steyn"], answer: "AB de Villiers", category: "T20/General" },
+            { question: "How many minutes does the changeover last between innings in a Test match?", options: ["10 minutes", "15 minutes", "20 minutes", "5 minutes"], answer: "10 minutes", category: "TEST" },
+            { question: "Which country holds the record for the most ICC World Cup titles?", options: ["India", "Australia", "West Indies", "Sri Lanka"], answer: "Australia", category: "ODI" },
+            { question: "Who is the current leading run-scorer in T20 International cricket (as of late 2024)?", options: ["Virat Kohli", "Rohit Sharma", "Babar Azam", "Martin Guptill"], answer: "Rohit Sharma", category: "T20/General" },
+            { question: "What is the protective gear worn by the wicket-keeper over their hands?", options: ["Gloves", "Pads", "Helmet", "Thigh Guard"], answer: "Gloves", category: "T20/General" },
+            { question: "Which player is known for inventing the 'Switch Hit'?", options: ["Kevin Pietersen", "David Warner", "Glenn Maxwell", "AB de Villiers"], answer: "Kevin Pietersen", category: "IPL" },
+            { question: "A Test match is typically played over how many days?", options: ["4", "5", "3", "6"], answer: "5", category: "TEST" },
+            { question: "Which former Indian captain is known as 'Dada'?", options: ["Rahul Dravid", "MS Dhoni", "Sourav Ganguly", "Sachin Tendulkar"], answer: "Sourav Ganguly", category: "T20/General" },
+            { question: "What is the minimum number of fielders required inside the inner circle during the powerplay overs in ODI cricket?", options: ["2", "3", "4", "5"], answer: "4", category: "ODI" },
+            { question: "Which city hosts the 'Wankhede Stadium'?", options: ["Delhi", "Chennai", "Mumbai", "Bangalore"], answer: "Mumbai", category: "T20/General" },
+            { question: "What is the term for a bowler delivering the ball with their foot over the popping crease?", options: ["Wide", "Dead ball", "No-ball", "Bouncer"], answer: "No-ball", category: "T20/General" },
+            { question: "Who holds the record for the fastest century in ODI cricket?", options: ["AB de Villiers", "Shahid Afridi", "Corey Anderson", "Virat Kohli"], answer: "AB de Villiers", category: "ODI" },
+            { question: "Which team won the first ever Indian Premier League (IPL) title in 2008?", options: ["Chennai Super Kings", "Mumbai Indians", "Rajasthan Royals", "Kolkata Knight Riders"], answer: "Rajasthan Royals", category: "IPL" },
+            { question: "What is the common name for the pitch?", options: ["The Strip", "The Carpet", "The Square", "The Hangar"], answer: "The Strip", category: "T20/General" },
+            { question: "Who scored the first ever triple century for India in Test cricket?", options: ["Virender Sehwag", "Rahul Dravid", "VVS Laxman", "Sachin Tendulkar"], answer: "Virender Sehwag", category: "TEST" },
+            { question: "The Sheffield Shield is a major domestic competition in which country?", options: ["England", "Australia", "South Africa", "New Zealand"], answer: "Australia", category: "TEST" },
+            { question: "What is a 'Mankad'?", options: ["A type of slow ball", "A run-out at the non-striker's end", "A type of fielding drill", "A leg-side shot"], answer: "A run-out at the non-striker's end", category: "T20/General" },
+            { question: "Which captain led West Indies to both the 2012 and 2016 T20 World Cup titles?", options: ["Chris Gayle", "Darren Sammy", "Dwayne Bravo", "Kieron Pollard"], answer: "Darren Sammy", category: "T20/General" },
+            { question: "What is the 'follow-on' rule in Test cricket?", options: ["When the team batting first is forced to bat again", "When the team batting second is forced to follow the ball", "When the team batting second is forced to bat again", "When the captains follow the toss"], answer: "When the team batting second is forced to bat again", category: "TEST" },
+            { question: "Who is known as the 'God of Cricket'?", options: ["Sachin Tendulkar", "Don Bradman", "Sir Garfield Sobers", "Brian Lara"], answer: "Sachin Tendulkar", category: "T20/General" },
+            { question: "How many runs are awarded to the batting team if the ball reaches the boundary rope after hitting the ground?", options: ["6", "4", "3", "2"], answer: "4", category: "ODI" },
+            { question: "Which Australian batsman is famous for his unconventional 'reverse sweep' shot?", options: ["Steve Smith", "Matthew Hayden", "David Warner", "Ricky Ponting"], answer: "David Warner", category: "T20/General" },
+            { question: "What is the name of the white line painted on the ground which the bowler must not cross?", options: ["Popping crease", "Return crease", "Bowling crease", "Danger area"], answer: "Popping crease", category: "TEST" },
+            { question: "Which country's national team is nicknamed the 'Proteas'?", options: ["Australia", "New Zealand", "South Africa", "Pakistan"], answer: "South Africa", category: "T20/General" },
+            { question: "Who was the first cricketer to take 500 wickets in ODI history?", options: ["Wasim Akram", "Muttiah Muralitharan", "Glenn McGrath", "Anil Kumble"], answer: "Wasim Akram", category: "ODI" },
+            { question: "What does the 'B' stand for in 'BBL' (Big Bash League)?", options: ["Batting", "Big", "Boundary", "Brisbane"], answer: "Big", category: "IPL" },
+            { question: "How many minutes is the tea break in a Test match?", options: ["10 minutes", "20 minutes", "30 minutes", "40 minutes"], answer: "20 minutes", category: "TEST" },
+            { question: "Which former Indian spinner is known for his 'Googly'?", options: ["Harbhajan Singh", "Anil Kumble", "R. Ashwin", "Kuldeep Yadav"], answer: "Anil Kumble", category: "T20/General" },
+            { question: "What is the term for a ball that bounces twice before reaching the batsman?", options: ["Dead ball", "No-ball", "Wide", "Double bounce"], answer: "Dead ball", category: "T20/General" },
+            { question: "Which country won the first ever T20 International match?", options: ["Australia", "England", "New Zealand", "South Africa"], answer: "Australia", category: "T20/General" },
+            { question: "What is the minimum age to be eligible to play international cricket?", options: ["16", "18", "15", "17"], answer: "15", category: "ODI" },
+            { question: "Who is the youngest cricketer to score a Test century?", options: ["Sachin Tendulkar", "Mushtaq Mohammad", "Javed Miandad", "Mohammad Ashraful"], answer: "Mushtaq Mohammad", category: "TEST" },
+            { question: "What is a 'maiden over'?", options: ["An over with no wickets", "An over with six runs", "An over with no runs scored", "A slow over"], answer: "An over with no runs scored", category: "T20/General" },
+            { question: "Which country plays for the 'Sir Frank Worrell Trophy'?", options: ["Australia vs South Africa", "England vs West Indies", "Australia vs West Indies", "India vs Pakistan"], answer: "Australia vs West Indies", category: "TEST" },
+            { question: "Who was the first player to hit 6 sixes in an over in international cricket?", options: ["Herschelle Gibbs", "Yuvraj Singh", "Sir Garfield Sobers", "Kieron Pollard"], answer: "Sir Garfield Sobers", category: "T20/General" },
+            { question: "What is the term for the area outside the stumps where the bowler lands their foot?", options: ["Danger area", "No-ball zone", "Good length area", "Off-stump line"], answer: "Danger area", category: "TEST" },
+            { question: "Which legendary spinner is credited with developing the 'Doosra'?", options: ["Muttiah Muralitharan", "Saqlain Mushtaq", "Harbhajan Singh", "Shane Warne"], answer: "Saqlain Mushtaq", category: "T20/General" },
+            { question: "What is the weight range (in ounces) for a standard cricket ball?", options: ["4.5 to 5.5 oz", "5.5 to 6.5 oz", "3.5 to 4.5 oz", "4 to 5 oz"], answer: "5.5 to 6.5 oz", category: "ODI" },
+            { question: "Who holds the record for the most catches in Test cricket by a non-wicketkeeper?", options: ["Ricky Ponting", "Rahul Dravid", "Mahela Jayawardene", "Mark Waugh"], answer: "Rahul Dravid", category: "TEST" },
+            { question: "What is a 'Timed Out' dismissal?", options: ["Batsman fails to report to the crease within 3 minutes", "Batsman takes too long to face the ball", "Batsman intentionally wastes time", "Batsman leaves the field too quickly"], answer: "Batsman fails to report to the crease within 3 minutes", category: "TEST" },
+            { question: "Which stadium in Kolkata is famous for its large capacity and atmosphere?", options: ["Feroz Shah Kotla", "Eden Gardens", "Wankhede Stadium", "Chinnaswamy Stadium"], answer: "Eden Gardens", category: "T20/General" },
+            { question: "The term 'Bazball' is associated with the aggressive style of which team's Test cricket?", options: ["Australia", "New Zealand", "England", "South Africa"], answer: "England", category: "TEST" },
+            { question: "Who was the first player to hit a century in T20 International cricket?", options: ["Chris Gayle", "Brendon McCullum", "Suresh Raina", "Rohit Sharma"], answer: "Brendon McCullum", category: "T20/General" },
+            { question: "What is the name of the two sticks placed on top of the stumps?", options: ["Bails", "Posts", "Wickets", "Creases"], answer: "Bails", category: "T20/General" },
+            { question: "Which country's national team is nicknamed the 'Black Caps'?", options: ["Australia", "New Zealand", "England", "West Indies"], answer: "New Zealand", category: "T20/General" },
+            { question: "How many major categories of cricket are generally recognized?", options: ["2", "3", "4", "5"], answer: "3", category: "ODI" },
+            { question: "Who is the current leading run-scorer in IPL history?", options: ["Virat Kohli", "Rohit Sharma", "Suresh Raina", "David Warner"], answer: "Virat Kohli", category: "IPL" },
+            { question: "What is the height of the stumps above the ground (in inches)?", options: ["28 inches", "30 inches", "32 inches", "26 inches"], answer: "28 inches", category: "TEST" },
+            { question: "Which term is used when the ball passes close to the batsman's bat without touching it?", options: ["The Whiff", "The Miss", "The Air Ball", "The Play and Miss"], answer: "The Play and Miss", category: "T20/General" },
+            { question: "Which Australian fast bowler is nicknamed 'The Lyon'?", options: ["Nathan Lyon", "Pat Cummins", "Mitchell Starc", "Josh Hazlewood"], answer: "Nathan Lyon", category: "T20/General" },
+            { question: "What is the minimum number of fielders required outside the 30-yard circle after the powerplay in ODI cricket?", options: ["3", "4", "5", "6"], answer: "4", category: "ODI" },
+            { question: "Who holds the record for the fastest Test century?", options: ["Brendon McCullum", "Sir Vivian Richards", "Adam Gilchrist", "Misbah-ul-Haq"], answer: "Brendon McCullum", category: "TEST" },
+            { question: "Which country is the home of the 'Caribbean Premier League' (CPL)?", options: ["India", "Australia", "West Indies", "England"], answer: "West Indies", category: "IPL" },
+            { question: "What is the 'Vinoo Mankad Trophy' associated with?", options: ["U-19 Cricket", "Women's Cricket", "Domestic T20", "Blind Cricket"], answer: "U-19 Cricket", category: "T20/General" },
+            { question: "Who was the first female cricketer to score an ODI double century?", options: ["Belinda Clark", "Mithali Raj", "Amelia Kerr", "Charlotte Edwards"], answer: "Belinda Clark", category: "ODI" },
+            { question: "What is the name of the score when the innings is declared closed by the captain?", options: ["All Out", "Retired Hurt", "Declaration", "Follow On"], answer: "Declaration", category: "TEST" },
+            { question: "Which type of pitch is generally considered best for spin bowling?", options: ["Green top", "Flat track", "Dusty/Dry pitch", "Cement pitch"], answer: "Dusty/Dry pitch", category: "TEST" },
+            { question: "Who has the most centuries in ODI cricket?", options: ["Virat Kohli", "Sachin Tendulkar", "Ricky Ponting", "Rohit Sharma"], answer: "Virat Kohli", category: "ODI" },
+            { question: "What is the distance (in feet) between the popping crease and the bowling crease?", options: ["3 feet", "4 feet", "5 feet", "6 feet"], answer: "4 feet", category: "TEST" },
+            { question: "Which country won the first two ICC Cricket World Cups (1975 & 1979)?", options: ["England", "Australia", "West Indies", "India"], answer: "West Indies", category: "ODI" },
+            { question: "What is the common term for a delivery that bounces unexpectedly high?", options: ["Bouncer", "Lifter", "Shooter", "Yorker"], answer: "Bouncer", category: "T20/General" },
+            { question: "Who is the only bowler to dismiss all eleven batsmen in a single Test match?", options: ["Jim Laker", "Anil Kumble", "Muttiah Muralitharan", "Sydney Barnes"], answer: "Jim Laker", category: "TEST" },
+            { question: "What is the term for a ball bowled so fast that it cannot be seen clearly?", options: ["Quickie", "Express", "Sizzler", "Thunderbolt"], answer: "Express", category: "T20/General" },
+            { question: "Which Australian bowler is famous for bowling the 'Ball of the Century'?", options: ["Glenn McGrath", "Brett Lee", "Shane Warne", "Dennis Lillee"], answer: "Shane Warne", category: "T20/General" },
+            { question: "What is the score achieved by a batsman when they reach 50 runs?", options: ["Century", "Half-century", "Double century", "Maiden score"], answer: "Half-century", category: "T20/General" },
+            { question: "The 'Gabba' is a famous cricket ground located in which Australian city?", options: ["Sydney", "Melbourne", "Brisbane", "Perth"], answer: "Brisbane", category: "T20/General" },
+            { question: "What is the duration of a Super Over in T20 cricket?", options: ["6 balls", "10 balls", "8 balls", "1 over"], answer: "1 over", category: "T20/General" },
+            { question: "Who was the first wicket-keeper to effect 100 stumpings in ODIs?", options: ["MS Dhoni", "Kumar Sangakkara", "Adam Gilchrist", "Mark Boucher"], answer: "Kumar Sangakkara", category: "ODI" },
+            { question: "What is the name of the boundary that is hit by a batsman that clears the rope without bouncing?", options: ["Four", "Six", "Home Run", "Boundary Maximum"], answer: "Six", category: "T20/General" },
+            { question: "Which country is sometimes referred to as the 'Lion Cubs' in cricket?", options: ["Sri Lanka", "Bangladesh", "Afghanistan", "Zimbabwe"], answer: "Afghanistan", category: "T20/General" },
+            { question: "What is the maximum permitted weight (in ounces) of a cricket bat?", options: ["1500g", "1300g", "1200g", "1400g"], answer: "1300g", category: "ODI" },
+            { question: "Who holds the record for the highest individual score in ODI cricket?", options: ["Chris Gayle", "Sachin Tendulkar", "Rohit Sharma", "Martin Guptill"], answer: "Rohit Sharma", category: "ODI" },
+            { question: "Which team holds the record for the most IPL titles?", options: ["Chennai Super Kings", "Royal Challengers Bangalore", "Kolkata Knight Riders", "Mumbai Indians"], answer: "Mumbai Indians", category: "IPL" },
+            { question: "Which player has won the most Orange Cap awards (most runs) in IPL history?", options: ["David Warner", "Virat Kohli", "Chris Gayle", "KL Rahul"], answer: "David Warner", category: "IPL" },
+            { question: "The 'Purple Cap' in IPL is awarded for what achievement?", options: ["Most centuries", "Most sixes", "Most wickets", "Best strike rate"], answer: "Most wickets", category: "IPL" },
+            { question: "Which IPL team's home ground is the M. Chinnaswamy Stadium?", options: ["Sunrisers Hyderabad", "Delhi Capitals", "Royal Challengers Bangalore", "Rajasthan Royals"], answer: "Royal Challengers Bangalore", category: "IPL" },
+            { question: "Who hit the fastest fifty (in terms of balls faced) in IPL history?", options: ["KL Rahul", "Yusuf Pathan", "Pat Cummins", "Rishabh Pant"], answer: "KL Rahul", category: "IPL" },
+            { question: "Which former Indian wicket-keeper has played the most matches as captain in the IPL?", options: ["Gautam Gambhir", "MS Dhoni", "Virat Kohli", "Rohit Sharma"], answer: "MS Dhoni", category: "IPL" },
+            { question: "Which bowler has taken the most hat-tricks in IPL history?", options: ["Amit Mishra", "Yuvraj Singh", "Lasith Malinga", "Pravin Tambe"], answer: "Amit Mishra", category: "IPL" },
+            { question: "What is the highest individual score by a batsman in IPL history?", options: ["Chris Gayle (175*)", "Brendon McCullum (158*)", "AB de Villiers (133*)", "KL Rahul (132*)"], answer: "Chris Gayle (175*)", category: "IPL" },
+            { question: "Which IPL franchise won the tournament in their debut season (excluding the inaugural 2008 winner)?", options: ["Gujarat Titans", "Pune Warriors India", "Kochi Tuskers Kerala", "Rising Pune Supergiant"], answer: "Gujarat Titans", category: "IPL" },
+            { question: "Who was the first batsman to score 5000 runs in the IPL?", options: ["Suresh Raina", "Shikhar Dhawan", "Rohit Sharma", "Virat Kohli"], answer: "Suresh Raina", category: "IPL" },
+            { question: "Which Australian bowler achieved the best figures in a single ODI World Cup final (as of 2023)?", options: ["Glenn McGrath", "Mitchell Starc", "Adam Zampa", "Shane Warne"], answer: "Glenn McGrath", category: "ODI" },
+            { question: "How many centuries did Sachin Tendulkar score in his ODI career?", options: ["49", "51", "45", "50"], answer: "49", category: "ODI" },
+            { question: "What is the minimum margin of victory for an ODI team to enforce the 'follow on' rule?", options: ["150 runs", "200 runs", "No follow-on rule in ODI", "100 runs"], answer: "No follow-on rule in ODI", category: "ODI" },
+            { question: "Who was the Man of the Match in the 2011 Cricket World Cup final?", options: ["Gautam Gambhir", "MS Dhoni", "Yuvraj Singh", "Zaheer Khan"], answer: "MS Dhoni", category: "ODI" },
+            { question: "The Duleep Trophy is a major domestic first-class cricket tournament in which country?", options: ["Pakistan", "India", "Sri Lanka", "Bangladesh"], answer: "India", category: "TEST" },
+            { question: "What is the longest continuous streak of playing Test matches held by a cricketer?", options: ["Alastair Cook", "Allan Border", "Sachin Tendulkar", "Sunil Gavaskar"], answer: "Allan Border", category: "TEST" },
+            { question: "Which iconic Test ground in England is famous for its sloping pitch?", options: ["Lord's", "The Oval", "Headingley", "Trent Bridge"], answer: "Lord's", category: "TEST" },
+            { question: "What is the maximum number of fielders permitted in the slip cordon for a Test match?", options: ["3", "4", "5", "No limit"], answer: "No limit", category: "TEST" },
+            { question: "What is the term for a batsman hitting the ball over the boundary line for six runs using only their front foot?", options: ["Lofted shot", "Front-foot Six", "Slog", "Switch Hit"], answer: "Lofted shot", category: "T20/General" },
+            { question: "How many fielders are allowed on the leg side at any point in ODI cricket (outside of penalties)?", options: ["4", "5", "6", "No limit"], answer: "5", category: "ODI" },
+            { question: "Who holds the record for the most ducks (zero scores) in Test cricket history?", options: ["Courtney Walsh", "Muttiah Muralitharan", "Glenn McGrath", "Chris Martin"], answer: "Courtney Walsh", category: "TEST" },
+            { question: "In Test cricket, what is the term for three consecutive centuries by a batsman in three consecutive innings?", options: ["Hat-trick of centuries", "Triple ton", "Hattrick of Tons", "Triple Century"], answer: "Hat-trick of centuries", category: "TEST" }
+        ];
+        // --- End Quiz Data ---
+
+        // --- Game State Variables ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        // Stores the user's answer for each question: { selectedOption: string, isCorrect: boolean }
+        let userAnswers = []; 
+        let quizQuestions = []; // Filtered and shuffled array for the current game
+
+        // --- DOM Element References ---
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const qText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreDisplay = document.getElementById('score-display');
+        const qCounter = document.getElementById('q-counter');
+        const feedbackMsg = document.getElementById('feedback-message');
+        const navPrevButton = document.getElementById('nav-prev-button');
+        const navNextButton = document.getElementById('nav-next-button');
+        const emojiBgOverlay = document.getElementById('emoji-bg-overlay');
+        const progressBar = document.getElementById('progress-bar');
+
+        // --- Utility Functions ---
+
+        /**
+         * Shuffles an array in place using the Fisher-Yates algorithm.
+         * @param {Array} array - The array to shuffle.
+         * @returns {Array} The shuffled array.
+         */
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        /**
+         * Populates the background with random cricket-themed emojis.
+         */
+        const backgroundEmojiList = ["🏏", "🏆", "🏟️", "🏅", "🟢", "🟡"];
+        function populateBackgroundEmojis() {
+            emojiBgOverlay.innerHTML = ''; 
+            const numberOfEmojis = 80; 
+
+            for (let i = 0; i < numberOfEmojis; i++) {
+                const randomEmoji = backgroundEmojiList[Math.floor(Math.random() * backgroundEmojiList.length)];
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = randomEmoji;
+                emojiSpan.style.left = `${Math.random() * 100}%`;
+                emojiSpan.style.top = `${Math.random() * 100}%`;
+                emojiSpan.style.transform = `scale(${0.5 + Math.random() * 0.5}) rotate(${Math.random() * 360}deg)`; 
+                emojiBgOverlay.appendChild(emojiSpan);
+            }
+        }
+        
+        /**
+         * Shows the category selection screen.
+         */
+        function showStartScreen() {
+            startScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden');
+        }
+
+        /**
+         * Updates the visual progress bar based on the current question index.
+         */
+        function updateProgressBar() {
+            if (quizQuestions.length === 0) {
+                progressBar.style.width = '0%';
+                return;
+            }
+            // Progress is based on the index we are currently on, relative to total questions.
+            // Using index + 1 ensures the bar reaches 100% on the last question.
+            const progress = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        /**
+         * Calculates the total score from the userAnswers array.
+         */
+        function calculateScore() {
+            score = userAnswers.filter(a => a && a.isCorrect).length;
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+
+        // --- Game Flow ---
+
+        /**
+         * Initializes and starts a new quiz game based on the selected category.
+         * @param {string} category - The selected category ('ODI', 'IPL', 'TEST', or 'T20/General').
+         */
+        function startGame(category) {
+            // 1. Filter questions by category and shuffle
+            const filteredQuestions = quizData.filter(q => q.category === category);
+            
+            if (filteredQuestions.length === 0) {
+                console.error("No questions available for this category!");
+                feedbackMsg.textContent = 'Error: No questions found for this category.';
+                showStartScreen();
+                return;
+            }
+
+            // 2. Prepare game state
+            quizQuestions = shuffleArray(filteredQuestions); 
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = new Array(quizQuestions.length).fill(null); // Initialize with nulls
+
+            // 3. Update UI
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            quizScreen.classList.add('flex'); 
+            scoreDisplay.textContent = `Score: 0`;
+            
+            loadQuestion();
+        }
+
+        /**
+         * Loads and displays the current question and its options.
+         */
+        function loadQuestion() {
+            if (currentQuestionIndex < 0 || currentQuestionIndex >= quizQuestions.length) {
+                return; // Should not happen if navigation buttons are correctly managed
+            }
+
+            // Reset UI elements
+            feedbackMsg.textContent = '';
+            feedbackMsg.classList.remove('text-red-400', 'text-green-400', 'text-yellow-400');
+            optionsContainer.innerHTML = '';
+            
+            calculateScore(); // Recalculate score on load for safety
+            updateProgressBar();
+            
+            const currentQ = quizQuestions[currentQuestionIndex];
+            const qNum = currentQuestionIndex + 1;
+            const totalQ = quizQuestions.length;
+            const userState = userAnswers[currentQuestionIndex];
+            const isAnswered = !!userState; // Check if the current question has a stored answer
+
+            // Update question text and counter
+            qText.textContent = currentQ.question;
+            qCounter.innerHTML = `Category: ${currentQ.category} | Q ${qNum} of ${totalQ}`;
+            
+            // Generate options buttons
+            const shuffledOptions = shuffleArray(currentQ.options); 
+            
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'option-button p-3 rounded-lg text-center text-white font-medium focus:outline-none focus:ring-4 transition duration-150';
+
+                if (isAnswered) {
+                    // Question has been answered (Navigation mode)
+                    button.disabled = true; // Disable interaction
+                    
+                    if (option === userState.selectedOption) {
+                        // This is the selected option
+                        if (userState.isCorrect) {
+                            // Correct answer (show green)
+                            button.classList.add('correct-answer');
+                            feedbackMsg.textContent = 'You correctly answered this question.';
+                            feedbackMsg.classList.add('text-green-400');
+                        } else {
+                            // Incorrect answer (show red)
+                            button.classList.add('wrong-answer');
+                            feedbackMsg.textContent = `Wrong! The correct answer was: ${currentQ.answer}`;
+                            feedbackMsg.classList.add('text-red-400');
+                        }
+                    } else if (option === currentQ.answer) {
+                        // Highlight the correct answer even if they chose wrong
+                        button.classList.add('correct-answer');
+                    } else {
+                        // Default style for unselected, wrong options
+                        button.classList.add('bg-blue-700');
+                    }
+                } else {
+                    // Question is unanswered (Selection mode)
+                    button.classList.add('bg-blue-700', 'hover:bg-blue-600', 'focus:ring-blue-500/50');
+                    button.onclick = () => handleAnswer(button, option, currentQ.answer);
+                    feedbackMsg.textContent = 'Make your selection!';
+                    feedbackMsg.classList.add('text-yellow-400');
+                }
+                optionsContainer.appendChild(button);
+            });
+
+            // Update Navigation Buttons
+            updateNavigationButtons(isAnswered);
+        }
+
+        /**
+         * Updates the state and text of the navigation buttons (Previous/Next).
+         */
+        function updateNavigationButtons(isAnswered) {
+            // Previous Button
+            navPrevButton.disabled = currentQuestionIndex === 0;
+
+            // Next Button Logic
+            const isLastQuestion = currentQuestionIndex === quizQuestions.length - 1;
+            
+            if (!isAnswered) {
+                // Must answer before navigating next
+                navNextButton.disabled = true;
+                navNextButton.textContent = isLastQuestion ? 'View Results' : 'Next Delivery';
+                navNextButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                navNextButton.classList.add('bg-gray-400', 'hover:bg-gray-400'); // Style disabled next
+            } else {
+                // Answered: Navigation is possible
+                navNextButton.disabled = false;
+                navNextButton.textContent = isLastQuestion ? 'View Results' : 'Next Delivery';
+                navNextButton.classList.remove('bg-gray-400', 'hover:bg-gray-400');
+                navNextButton.classList.add('bg-green-600', 'hover:bg-green-700'); // Style enabled next
+            }
+        }
+
+        /**
+         * Handles the user's answer selection (scoring and state storage).
+         */
+        function handleAnswer(selectedButton, selectedOption, correctAnswer) {
+            // The question is now answered. Store the state.
+            const isCorrect = selectedOption === correctAnswer;
+            
+            userAnswers[currentQuestionIndex] = {
+                selectedOption: selectedOption,
+                isCorrect: isCorrect
+            };
+
+            // Recalculate global score
+            calculateScore();
+            
+            // Redraw the question to apply correct/wrong classes and disable options
+            loadQuestion(); 
+            // loadQuestion handles the button state refresh by calling updateNavigationButtons
+        }
+
+        /**
+         * Moves to the previous question index.
+         */
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        /**
+         * Moves to the next question index or ends the game.
+         */
+        function nextQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length - 1) {
+                endGame();
+                return;
+            }
+            
+            // Check if the current question is answered before moving forward
+            if (!userAnswers[currentQuestionIndex]) {
+                 // Should be prevented by the disabled button, but as a fallback
+                feedbackMsg.textContent = 'Please select an answer before proceeding!';
+                feedbackMsg.classList.remove('text-green-400');
+                feedbackMsg.classList.add('text-red-400');
+                return;
+            }
+
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+
+        /**
+         * Ends the quiz and displays the final score.
+         */
+        function endGame() {
+            // Update progress bar to 100% on game end
+            progressBar.style.width = '100%';
+
+            qText.textContent = `Quiz Complete!`;
+            optionsContainer.innerHTML = ''; // Clear options
+            navPrevButton.disabled = true;
+            navNextButton.disabled = true;
+
+            const finalMessage = document.createElement('p');
+            finalMessage.className = 'text-3xl font-bold text-center mt-6 text-yellow-400';
+            finalMessage.innerHTML = `Final Score: ${score} / ${quizQuestions.length}`;
+            optionsContainer.appendChild(finalMessage);
+
+            feedbackMsg.textContent = 'Great innings! Use the "Return to Levels" button above to start a new quiz.';
+            feedbackMsg.classList.add('text-yellow-400');
+        }
+
+        // Initialize the game when the window loads
+        window.onload = () => {
+            populateBackgroundEmojis();
+            showStartScreen(); // Start by showing the category selection
+        }
+    </script>
+</body>
+</html>
