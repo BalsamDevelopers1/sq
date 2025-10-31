@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Racer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS for Game Aesthetics */
+        :root {
+            --primary-color: #fca311; /* Bright orange/yellow */
+            --secondary-color: #14213d; /* Dark blue/black */
+            --tertiary-color: #e5e5e5; /* Light gray */
+            --road-color: #4b5563; /* Gray road */
+            --success-color: #2a9d8f; /* Greenish for high score */
+            --diff-easy: #2a9d8f;
+            --diff-medium: #fca311;
+            --diff-hard: #ef233c;
+            --diff-custom: #1e90ff; /* Dodger Blue for Custom */
+        }
+        body {
+            font-family: 'Audiowide', sans-serif;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        #game-container {
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 40px rgba(252, 163, 17, 0.5);
+            border: 4px solid var(--primary-color);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: #000;
+        }
+        #gameCanvas {
+            width: 100%;
+            height: 60vh; /* Responsive height */
+            background-color: var(--road-color);
+            border-bottom: 2px solid var(--primary-color);
+        }
+        .ui-panel {
+            background-color: var(--secondary-color);
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            color: var(--tertiary-color);
+            font-size: 1.1rem;
+            text-shadow: 0 0 5px rgba(252, 163, 17, 0.8);
+        }
+        .control-button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #e6910a;
+            transition: all 0.1s ease;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .control-button:active {
+            box-shadow: 0 2px 0 #e6910a;
+            transform: translateY(3px);
+        }
+        #mobile-controls {
+            display: none; /* Hidden by default, shown on mobile */
+            justify-content: center;
+            padding: 10px 0;
+            gap: 20px;
+        }
+        @media (max-width: 600px) {
+            #mobile-controls {
+                display: flex;
+            }
+            #gameCanvas {
+                height: 70vh;
+            }
+        }
+        #message-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 3px solid var(--primary-color);
+            padding: 20px 30px; /* Reduced vertical padding */
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            width: 80%;
+            max-width: 320px;
+            max-height: 95vh; /* Ensure it fits on screen */
+            overflow-y: auto;
+        }
+        #message-box h2 {
+            font-size: 2.5rem;
+            color: #ef233c;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px #ef233c;
+        }
+        #message-box p {
+            color: var(--tertiary-color);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        .restart-button {
+            background-color: var(--success-color);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 6px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #217d72;
+        }
+        .restart-button:active {
+            box-shadow: 0 1px 0 #217d72;
+            transform: translateY(3px);
+        }
+        .diff-btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: black;
+            transition: all 0.2s;
+            background-color: var(--tertiary-color);
+            cursor: pointer;
+        }
+        .diff-btn[data-difficulty="easy"] { background-color: var(--diff-easy); }
+        .diff-btn[data-difficulty="medium"] { background-color: var(--diff-medium); }
+        .diff-btn[data-difficulty="hard"] { background-color: var(--diff-hard); color: white; }
+        .diff-btn[data-difficulty="custom"] { background-color: var(--diff-custom); color: white; }
+
+        .selected-diff {
+            border: 3px solid white;
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        /* Custom speed input styling */
+        .setting-input {
+            width: 80px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 2px solid var(--diff-custom);
+            text-align: center;
+            font-weight: bold;
+            color: black;
+            background-color: white;
+        }
+        #custom-set-btn {
+            background-color: var(--diff-custom);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        /* Style for the new cash display in the UI panel */
+        #cash {
+            color: #FFD700; /* Gold text */
+            text-shadow: 0 0 5px #ffcc00;
+        }
+        /* Settings Section Styling */
+        .settings-section {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: var(--tertiary-color);
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="ui-panel">
+        <div id="score">SCORE: 0</div>
+        <div id="cash">CASH: 0</div> <!-- Cash Display -->
+        <div id="high-score">HIGH: 0</div>
+        <div id="speed">SPEED: 5</div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="mobile-controls">
+        <button id="left-btn" class="control-button">← LEFT</button>
+        <button id="right-btn" class="control-button">RIGHT →</button>
+    </div>
+    
+    <!-- NEW FOOTER SECTION -->
+    <div class="text-center py-2 text-xs text-gray-400 tracking-wider" style="background-color: #14213d;">
+        Developed by Srinath, Mithun, Kameshwar and Sukesh
+    </div>
+
+    <!-- Message Box for Game Over/Start -->
+    <div id="message-box">
+        <h2 id="message-title">GAME OVER</h2>
+        <p id="final-score">Final Score: 0</p>
+        
+        <!-- Difficulty Selector -->
+        <div id="difficulty-select" class="flex flex-col gap-3 my-4">
+            <h3 class="text-white text-base font-bold tracking-wider">SELECT INITIAL SPEED:</h3>
+            <div class="flex justify-center gap-2 mb-4">
+                <button class="diff-btn" data-difficulty="easy">Easy (15)</button>
+                <button class="diff-btn" data-difficulty="medium">Medium (25)</button>
+                <button class="diff-btn" data-difficulty="hard">Hard (40)</button>
+            </div>
+            
+            <!-- Custom Speed Input -->
+            <div class="flex flex-col items-center gap-2">
+                <h3 class="text-white text-sm font-bold tracking-wider">CUSTOM SPEED (10-100):</h3>
+                <div class="flex gap-2 items-center">
+                    <input type="number" id="custom-speed-input" value="25" min="10" max="100" class="setting-input focus:outline-none">
+                    <button id="custom-set-btn" class="diff-btn" data-difficulty="custom">SET</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Game Options Section -->
+        <div class="settings-section">
+            <h3 class="text-white text-base font-bold tracking-wider mb-3 border-b pb-1 border-gray-600">GAME OPTIONS:</h3>
+            
+            <div class="settings-item">
+                <span>Opponent Density (Gap):</span>
+                <input type="number" id="opponent-gap-input" value="150" min="50" max="300" class="setting-input w-20">
+            </div>
+
+            <div class="settings-item">
+                <span>Acceleration Rate:</span>
+                <input type="number" id="speed-increment-input" value="0.1" step="0.01" min="0.01" max="0.5" class="setting-input w-20">
+            </div>
+
+            <div class="settings-item">
+                <span>Player Car Color:</span>
+                <input type="color" id="player-color-input" value="#ff006e" class="setting-input w-20 h-8 p-0 border-none">
+            </div>
+        </div>
+        
+        <button id="restart-btn" class="restart-button mt-4">START RACE</button> 
+    </div>
+</div>
+
+<script type="module">
+    // --- Firebase Imports ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // --- Global Firebase & Auth Variables ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+    
+    let db;
+    let auth;
+    let userId = null;
+    let currentHighScore = 0; // Global variable to hold the high score
+    const HIGH_SCORE_DOC_PATH = `artifacts/${appId}/public/data/high_scores/arcade_racer`;
+
+    // --- Road Rules Fines Configuration ---
+    const CRASH_FINE = 10; // Fine for crashing (Game Over) - UPDATED TO $10
+    const RASH_DRIVING_FINE = 5; // Fine per rash driving incident
+    const RASH_DRIVING_TIME_WINDOW = 1000; // 1 second in milliseconds
+    const RASH_DRIVING_CHANGE_COUNT = 3; // 3 or more changes in 1 second is rash
+
+    let laneChangeHistory = []; // Stores timestamps of recent lane changes
+    let totalRashFines = 0; // Tracks the total fines incurred for rash driving in the current run
+
+    // --- Canvas and Context Setup ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- Game Configuration ---
+    let isRunning = false;
+    let score = 0;
+    let cash = 0; // Cash variable for collected items
+    const laneCount = 5; 
+    let frame = 0;
+    let animationFrameId;
+
+    // Game variables controlled by settings (defaults loaded from UI inputs on reset)
+    let currentDifficulty = 'medium'; 
+    let speed = 10;
+    let opponentGap = 150; // Controls density (frames between spawns)
+    let speedIncrement = 0.1; // Controls acceleration
+    let playerColor = '#ff006e'; // Initial Player Car Color
+
+    // Collectibles configuration
+    let coins = []; 
+    const coinSize = 15;
+    const coinGap = 60; 
+
+    let moneyBags = []; 
+    const moneyBagSize = 25; 
+    const moneyBagGap = 400; 
+    const moneyBagValue = 10; 
+
+    // Scaling Factor: Based on Hard (40 user units = 16 pixels/frame). Factor is 16/40 = 0.4
+    const SPEED_SCALE_FACTOR = 0.4;
+    const MAX_CUSTOM_SPEED_UNITS = 100;
+
+    // Default Difficulty settings map (only affects initial speed and sets baseline for other options)
+    const difficultySettings = {
+        'easy': { initialSpeedUnits: 15, label: "EASY(15)" }, 
+        'medium': { initialSpeedUnits: 25, label: "MEDIUM(25)" }, 
+        'hard': { initialSpeedUnits: 40, label: "HARD(40)" },
+    };
+
+
+    // UI Elements
+    const scoreDisplay = document.getElementById('score');
+    const cashDisplay = document.getElementById('cash'); 
+    const speedDisplay = document.getElementById('speed');
+    const highScoreDisplay = document.getElementById('high-score');
+    const messageBox = document.getElementById('message-box');
+    const messageTitle = document.getElementById('message-title');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const customSpeedInput = document.getElementById('custom-speed-input');
+    // NEW Settings Inputs
+    const opponentGapInput = document.getElementById('opponent-gap-input');
+    const speedIncrementInput = document.getElementById('speed-increment-input');
+    const playerColorInput = document.getElementById('player-color-input');
+    
+    // Road Line Simulation
+    let lineOffset = 0;
+    const lineSpeedMultiplier = 0.5; 
+    const roadColor = getComputedStyle(document.documentElement).getPropertyValue('--road-color').trim();
+    const lineColor = getComputedStyle(document.documentElement).getPropertyValue('--tertiary-color').trim();
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+    const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success-color').trim();
+
+    // Player Car Setup
+    const player = {
+        width: 30,
+        height: 50,
+        color: playerColor, // Will be updated by settings
+        lane: 2, 
+        x: 0, 
+        y: 0, 
+        lanePositions: [] 
+    };
+
+    // Opponent Cars Setup
+    let opponents = [];
+
+
+    // --- Firebase Logic ---
+
+    /**
+     * Authenticates the user and sets up the high score listener.
+     */
+    async function authenticateAndSetup() {
+        if (!firebaseConfig) {
+            console.warn("Firebase config not available. High score will not be persisted.");
+            return;
+        }
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                await signInAnonymously(auth);
+            }
+            userId = auth.currentUser?.uid || crypto.randomUUID();
+            setupHighScoreListener();
+        } catch (error) {
+            console.error("Firebase authentication failed:", error);
+            // Fallback for userId if auth fails
+            userId = crypto.randomUUID();
+        }
+    }
+    
+    /**
+     * Sets up a real-time listener for the global high score.
+     */
+    function setupHighScoreListener() {
+        if (!db) return;
+
+        const docRef = doc(db, HIGH_SCORE_DOC_PATH);
+
+        onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                currentHighScore = parseInt(data.score) || 0;
+                highScoreDisplay.textContent = `HIGH: ${currentHighScore}`;
+            } else {
+                currentHighScore = 0;
+                highScoreDisplay.textContent = `HIGH: 0`;
+            }
+        }, (error) => {
+            console.error("Error setting up high score listener:", error);
+        });
+    }
+
+    /**
+     * Checks the current score against the global high score and updates it if necessary.
+     * @param {number} crashPenalty - The amount fined for crashing.
+     * @param {number} rashPenalty - The total amount fined for rash driving during the run.
+     */
+    async function checkAndSetHighScore(crashPenalty = 0, rashPenalty = 0) {
+        if (!db) {
+             endGameMessage("CRASHED!", primaryColor, crashPenalty, rashPenalty);
+             return;
+        }
+        
+        if (score > currentHighScore) {
+            try {
+                const docRef = doc(db, HIGH_SCORE_DOC_PATH);
+                await setDoc(docRef, { 
+                    score: score, 
+                    userId: userId, 
+                    difficulty: currentDifficulty, 
+                    initialSpeed: speed, // Log the actual starting speed
+                    acceleration: speedIncrement, // Log the acceleration rate
+                    density: opponentGap, // Log the density setting
+                    timestamp: new Date().toISOString()
+                }, { merge: true });
+                
+                console.log("New high score saved:", score);
+                endGameMessage("NEW HIGH SCORE!", successColor, crashPenalty, rashPenalty);
+            } catch (e) {
+                console.error("Error setting high score document: ", e);
+                endGameMessage("CRASHED!", primaryColor, crashPenalty, rashPenalty);
+            }
+        } else {
+            endGameMessage("CRASHED!", primaryColor, crashPenalty, rashPenalty);
+        }
+    }
+
+
+    // --- Utility Functions ---
+
+    /**
+     * Sets the game initial speed and updates button styling.
+     * Game options (density, acceleration, color) are read directly from the UI inputs on reset.
+     * @param {string} level - 'easy', 'medium', 'hard', or 'custom'.
+     */
+    function setInitialSpeed(level) {
+        currentDifficulty = level;
+
+        // Determine the speed value to put into the custom input field
+        let speedValue;
+        if (level === 'custom') {
+            // Keep the current input value as the custom speed if it's valid
+            const currentVal = parseInt(customSpeedInput.value);
+            speedValue = Math.max(10, Math.min(MAX_CUSTOM_SPEED_UNITS, currentVal));
+        } else {
+            // Load the preset speed units for Easy/Medium/Hard
+            speedValue = difficultySettings[level].initialSpeedUnits;
+        }
+
+        // Apply the speed value to the custom input (so it's saved/visible)
+        customSpeedInput.value = speedValue;
+        
+        // Highlight the selected button
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+            btn.classList.remove('selected-diff');
+            if (btn.dataset.difficulty === level) {
+                btn.classList.add('selected-diff');
+            }
+        });
+
+        // The actual 'speed' variable and other options are set in resetGame()
+        updateUI(); 
+    }
+
+    /**
+     * Loads settings from the UI inputs and applies them to game variables.
+     */
+    function loadGameSettings() {
+        // 1. Initial Speed Calculation (from customSpeedInput)
+        const userSpeedUnits = parseInt(customSpeedInput.value) || difficultySettings['medium'].initialSpeedUnits;
+        const validatedSpeedUnits = Math.max(10, Math.min(MAX_CUSTOM_SPEED_UNITS, userSpeedUnits));
+        
+        speed = validatedSpeedUnits * SPEED_SCALE_FACTOR; 
+        customSpeedInput.value = validatedSpeedUnits; // Ensure input shows validated value
+
+        // 2. Opponent Density (opponentGap)
+        opponentGap = parseInt(opponentGapInput.value);
+        opponentGap = Math.max(50, Math.min(300, opponentGap)); // Clamp between 50 (max density) and 300 (min density)
+        opponentGapInput.value = opponentGap;
+
+        // 3. Acceleration Rate (speedIncrement)
+        speedIncrement = parseFloat(speedIncrementInput.value);
+        speedIncrement = Math.max(0.01, Math.min(0.5, speedIncrement)); // Clamp between 0.01 and 0.5
+        speedIncrementInput.value = speedIncrement.toFixed(2);
+
+        // 4. Player Color
+        playerColor = playerColorInput.value || '#ff006e';
+        player.color = playerColor;
+        
+        updateUI();
+    }
+
+
+    /**
+     * Resets the game state and calculates responsive dimensions.
+     */
+    function resetGame() {
+        // 1. Set canvas dimensions based on container size
+        const container = document.getElementById('game-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight * (canvas.offsetHeight / container.offsetHeight); 
+
+        // 2. Calculate lane center positions
+        const laneWidth = canvas.width / laneCount;
+        player.lanePositions = [];
+        for (let i = 0; i < laneCount; i++) {
+            player.lanePositions.push((i * laneWidth) + (laneWidth / 2));
+        }
+
+        // 3. Load ALL game settings (speed, gap, acceleration, color)
+        loadGameSettings();
+
+        // 4. Reset player position
+        player.lane = 2; // Middle lane is 2
+        player.x = player.lanePositions[player.lane] - player.width / 2;
+        player.y = canvas.height - player.height - 20;
+
+        // 5. Reset game state
+        score = 0;
+        cash = 0; 
+        frame = 0;
+        lineOffset = 0;
+        opponents = [];
+        coins = []; 
+        moneyBags = []; 
+        
+        // NEW: Reset road rules state
+        laneChangeHistory = []; 
+        totalRashFines = 0; 
+
+        // 6. Clear any lingering animation frame
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+    }
+    
+    /**
+     * Displays the game over message box.
+     * @param {string} title - The title of the message box.
+     * @param {string} color - The primary color for the box border.
+     * @param {number} crashPenalty - The amount fined for crashing.
+     * @param {number} rashPenalty - The total amount fined for rash driving during the run.
+     */
+    function endGameMessage(title, color, crashPenalty = 0, rashPenalty = 0) {
+        messageBox.style.display = 'block';
+        messageTitle.textContent = title;
+        
+        let fineText = "";
+        if (crashPenalty > 0) {
+            fineText += `<span class="block">Crash Fine: -$${crashPenalty}</span>`;
+        }
+        if (rashPenalty > 0) {
+             fineText += `<span class="block">Rash Driving Fines: -$${rashPenalty}</span>`;
+        }
+        
+        // Update final score display to include fine details
+        finalScoreDisplay.innerHTML = `
+            <strong>Final Score: ${score}</strong> | Cash Remaining: $${cash}<br>
+            <span class="text-sm text-yellow-300">Start Speed: ${Math.round(speed)} units</span>
+            ${fineText ? `<div class="mt-2 p-1 bg-red-800/50 rounded-lg text-red-300 font-bold text-sm">${fineText}</div>` : ''}
+        `;
+
+        messageBox.style.borderColor = color;
+    }
+
+
+    /**
+     * Updates the score, cash, and speed displays.
+     */
+    function updateUI() {
+        scoreDisplay.textContent = `SCORE: ${score}`;
+        cashDisplay.textContent = `CASH: ${cash}`; // Update cash display
+        
+        // Display the speed based on the current game variable, rounded for UI clarity
+        const speedText = Math.round(speed * 10) / 10;
+        
+        // Get the current speed units for the label
+        const speedUnits = Math.round(speed / SPEED_SCALE_FACTOR);
+        
+        let label = currentDifficulty.toUpperCase();
+        if (currentDifficulty === 'custom' || !difficultySettings[currentDifficulty]) {
+            label = `CUSTOM(${speedUnits})`;
+        } else {
+             label = `${label.split('(')[0]}(${speedUnits})`;
+        }
+
+        speedDisplay.textContent = `SPEED: ${speedText} (${label})`;
+    }
+
+    /**
+     * Generates a new random opponent car.
+     */
+    function generateOpponent() {
+        const lane = Math.floor(Math.random() * laneCount);
+        const colorIndex = Math.floor(Math.random() * 4);
+        const colors = ['#f77f00', '#2a9d8f', '#9d4edd', '#ef233c']; // Different opponent colors
+
+        opponents.push({
+            width: 30,
+            height: 50,
+            color: colors[colorIndex],
+            lane: lane,
+            x: player.lanePositions[lane] - 15,
+            y: -50, // Start just above the canvas
+            passed: false
+        });
+    }
+
+    /**
+     * Generates a new random coin collectible.
+     */
+    function generateCoin() {
+        const lane = Math.floor(Math.random() * laneCount);
+        
+        coins.push({
+            width: coinSize,
+            height: coinSize,
+            x: player.lanePositions[lane] - coinSize / 2, // Center coin in the lane
+            y: -coinSize, // Start just above the canvas
+        });
+    }
+
+    /**
+     * Generates a new random money bag collectible.
+     */
+    function generateMoneyBag() {
+        const lane = Math.floor(Math.random() * laneCount);
+        
+        moneyBags.push({
+            width: moneyBagSize,
+            height: moneyBagSize * 0.8, // Slightly rectangular shape
+            x: player.lanePositions[lane] - moneyBagSize / 2, // Center in lane
+            y: -moneyBagSize, // Start just above the canvas
+        });
+    }
+
+    // --- Drawing Functions ---
+
+    /**
+     * Draws the moving road lines.
+     */
+    function drawRoadLines() {
+        ctx.fillStyle = lineColor;
+        const lineYGap = 50; // Vertical distance between lines
+        const lineThickness = 5;
+        const lineLength = 25;
+
+        // Calculate the movement offset
+        lineOffset = (lineOffset + speed * lineSpeedMultiplier) % lineYGap;
+
+        // Draw lane divider lines (N lanes need N-1 dividers)
+        const laneWidth = canvas.width / laneCount;
+        for (let i = 1; i < laneCount; i++) {
+            const laneCenter = i * laneWidth;
+
+            // Draw dashed lines
+            for (let j = 0; j < canvas.height / lineYGap; j++) {
+                const y = (j * lineYGap) + lineOffset - lineYGap; // Adjust based on offset
+                ctx.fillRect(laneCenter - lineThickness / 2, y, lineThickness, lineLength);
+            }
+        }
+    }
+
+    /**
+     * Draws a car (player or opponent).
+     * @param {object} car - Car object with x, y, width, height, color.
+     */
+    function drawCar(car) {
+        ctx.fillStyle = car.color;
+        ctx.fillRect(car.x, car.y, car.width, car.height);
+
+        // Draw simple windows (optional detail)
+        ctx.fillStyle = '#00000033';
+        ctx.fillRect(car.x + 5, car.y + 5, car.width - 10, car.height / 4);
+        ctx.fillRect(car.x + 5, car.y + car.height - car.height / 4 - 5, car.width - 10, car.height / 4);
+    }
+    
+    /**
+     * Draws a coin.
+     * @param {object} coin - Coin object with x, y.
+     */
+    function drawCoin(coin) {
+        ctx.fillStyle = '#FFD700'; // Gold color
+        ctx.beginPath();
+        // Center the circle in the lane
+        const xCenter = coin.x + coinSize / 2;
+        const yCenter = coin.y + coinSize / 2;
+        ctx.arc(xCenter, yCenter, coinSize / 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Optional: Draw a white highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.beginPath();
+        ctx.arc(xCenter - 3, yCenter - 3, coinSize / 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    /**
+     * Draws a money bag.
+     * @param {object} bag - Money bag object with x, y.
+     */
+    function drawMoneyBag(bag) {
+        // Draw the bag shape (rectangle)
+        ctx.fillStyle = '#4CAF50'; // Green money bag color
+        ctx.fillRect(bag.x, bag.y, bag.width, bag.height);
+
+        // Draw the dollar sign ($)
+        ctx.fillStyle = '#FFD700'; // Gold dollar sign
+        ctx.font = 'bold 18px Audiowide';
+        ctx.textAlign = 'center';
+        ctx.fillText('$', bag.x + bag.width / 2, bag.y + bag.height * 0.8);
+        
+        // Draw tie/knot at the top
+        ctx.fillStyle = '#388E3C';
+        ctx.fillRect(bag.x, bag.y, bag.width, 4);
+    }
+
+
+    // --- Game Logic ---
+
+    /**
+     * Handles player car movement between lanes and checks for rash driving.
+     * @param {number} direction - -1 for left, 1 for right.
+     */
+    function movePlayer(direction) {
+        if (!isRunning) return;
+
+        let newLane = player.lane + direction;
+        newLane = Math.max(0, Math.min(laneCount - 1, newLane));
+
+        if (newLane !== player.lane) {
+            player.lane = newLane;
+            // Instantly snap player x to the new lane center
+            player.x = player.lanePositions[player.lane] - player.width / 2;
+
+            // --- Rash Driving Check ---
+            const now = Date.now();
+            laneChangeHistory.push(now);
+
+            // 1. Remove old entries outside the time window
+            laneChangeHistory = laneChangeHistory.filter(time => now - time <= RASH_DRIVING_TIME_WINDOW);
+
+            // 2. Check if the remaining count exceeds the threshold
+            if (laneChangeHistory.length >= RASH_DRIVING_CHANGE_COUNT) {
+                // Rash Driving detected! Apply fine and reset tracking for this window
+                
+                // Calculate actual deduction (cannot go below zero cash)
+                const deduction = Math.min(cash, RASH_DRIVING_FINE);
+                cash = Math.max(0, cash - RASH_DRIVING_FINE);
+                totalRashFines += deduction; // Track the amount actually deducted
+                
+                laneChangeHistory = []; // Reset window to prevent continuous firing
+                updateUI();
+                console.log(`Rash driving fine applied: -$${deduction} cash. Total rash fines: $${totalRashFines}`);
+            }
+            // --------------------------
+        }
+    }
+
+    /**
+     * Checks for collision between two objects.
+     * @param {object} carA - The first object (player).
+     * @param {object} carB - The second object (opponent or collectible).
+     * @returns {boolean} True if collision detected.
+     */
+    function checkCollision(carA, carB) {
+        return carA.x < carB.x + carB.width &&
+               carA.x + carA.width > carB.x &&
+               carA.y < carB.y + carB.height &&
+               carA.y + carA.height > carB.y;
+    }
+    
+    /**
+     * Stops the game, applies the crash fine, and initiates the high score check.
+     */
+    function endGame() {
+        isRunning = false;
+        
+        // --- Crash Fine Logic ---
+        let netCrashPenalty = 0;
+        
+        // Only apply the crash fine if the player has cash available
+        if (cash > 0) {
+            const deduction = Math.min(cash, CRASH_FINE);
+            cash -= deduction;
+            netCrashPenalty = deduction;
+        }
+
+        console.log(`Game over! Crash fine applied: -$${netCrashPenalty}`);
+
+        checkAndSetHighScore(netCrashPenalty, totalRashFines); 
+    }
+
+    /**
+     * The main game update loop.
+     */
+    function updateGame() {
+        if (!isRunning) return;
+
+        // 1. Clear Canvas
+        ctx.fillStyle = roadColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Draw Moving Road Lines
+        drawRoadLines();
+
+        // 3. Opponent and Collectible Management
+        
+        // Coin Generation (High Frequency)
+        if (frame % coinGap === 0) {
+            generateCoin();
+        }
+        
+        // Money Bag Generation (Rare)
+        if (frame % moneyBagGap === 0) {
+            generateMoneyBag();
+        }
+
+        // Opponent Generation (Controlled by opponentGap setting)
+        if (frame % opponentGap === 0) {
+            generateOpponent();
+        }
+        
+        // Filter the coins array (movement, collection)
+        coins = coins.filter(coin => {
+            coin.y += speed; // Move coin down
+
+            // Check for player collection
+            if (checkCollision(player, coin)) {
+                cash += 1; // Standard value
+                return false; // Remove collected coin
+            }
+
+            return coin.y < canvas.height; // Keep coin on screen
+        });
+        
+        // Filter the money bags array (movement, collection)
+        moneyBags = moneyBags.filter(bag => {
+            bag.y += speed; // Move bag down
+
+            // Check for player collection
+            if (checkCollision(player, bag)) {
+                cash += moneyBagValue; // High value reward (10)
+                return false; // Remove collected bag
+            }
+
+            return bag.y < canvas.height; // Keep bag on screen
+        });
+
+
+        // Filter the opponents array (movement, collision, scoring)
+        opponents = opponents.filter(opponent => {
+            // Move opponent
+            opponent.y += speed;
+
+            // Check for collision
+            if (checkCollision(player, opponent)) {
+                endGame();
+                return false; // Collision stops the game
+            }
+
+            // Check if passed the player/bottom of screen
+            if (opponent.y > canvas.height && !opponent.passed) {
+                // Score only if they passed the bottom edge
+                score++;
+                opponent.passed = true;
+                return false; // Remove passed opponent
+            }
+
+            return opponent.y < canvas.height; // Keep on screen
+        });
+
+        // 4. Draw Collectibles and Opponents
+        coins.forEach(drawCoin); 
+        moneyBags.forEach(drawMoneyBag); // Draw the new high-value bags
+        opponents.forEach(drawCar);
+
+        // 5. Draw Player
+        // The player.color is updated in loadGameSettings() and used here implicitly
+        drawCar(player);
+        // Add a distinct border to the player car for visibility
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(player.x, player.y, player.width, player.height);
+
+        // 6. Update Score and Speed
+        frame++;
+        if (frame % 60 === 0) { // Every second (60 frames)
+            score++;
+            speed += speedIncrement; // Uses the configured speedIncrement
+        }
+        updateUI();
+
+        // 7. Loop
+        animationFrameId = requestAnimationFrame(updateGame);
+    }
+
+    // --- Event Listeners and Setup ---
+
+    /**
+     * Starts the game loop.
+     */
+    function startGame() {
+        messageBox.style.display = 'none';
+        resetGame();
+        isRunning = true;
+        updateGame();
+    }
+    
+    /**
+     * Shows the initial start screen message.
+     */
+    function showStartScreen() {
+        endGameMessage("ARCADE RACER", primaryColor);
+        document.getElementById('final-score').innerHTML = `
+            Configure your speed and game options, then hit **START RACE**! 
+            Collect cash and avoid crashes.
+            <div class="mt-3 text-sm text-yellow-300">
+                **Road Rules:** Crash fine: -$${CRASH_FINE}. Rash driving fine: -$${RASH_DRIVING_FINE} (3 rapid lane changes).
+            </div>
+        `;
+        document.querySelector('.restart-button').textContent = "START RACE";
+        // Ensure inputs are initialized with the default values used in the HTML
+        loadGameSettings(); 
+        setInitialSpeed('medium');
+    }
+
+    // Keyboard controls for desktop
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'A' || e.key === 'a') {
+            movePlayer(-1);
+        } else if (e.key === 'ArrowRight' || e.key === 'D' || e.key === 'd') {
+            movePlayer(1);
+        }
+        if (!isRunning && (e.key === 'Enter' || e.key === ' ')) {
+            startGame();
+        }
+    });
+
+    // Mobile controls (Buttons)
+    document.getElementById('left-btn').addEventListener('click', () => movePlayer(-1));
+    document.getElementById('right-btn').addEventListener('click', () => movePlayer(1));
+
+    // Game Control Buttons
+    document.getElementById('restart-btn').addEventListener('click', startGame);
+    
+    // Difficulty Buttons (Sets the initial speed input value)
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const difficulty = e.target.dataset.difficulty;
+            if (difficulty !== 'custom') {
+                 setInitialSpeed(difficulty);
+            }
+        });
+    });
+
+    // Custom Speed Setter (Validates the input and sets the difficulty label to custom)
+    document.getElementById('custom-set-btn').addEventListener('click', () => {
+        const speedInput = parseInt(customSpeedInput.value);
+        if (speedInput >= 10 && speedInput <= MAX_CUSTOM_SPEED_UNITS) {
+            setInitialSpeed('custom');
+        } else {
+            // Provide a visual error cue
+            customSpeedInput.style.borderColor = 'red';
+            setTimeout(() => { customSpeedInput.style.borderColor = document.documentElement.style.getPropertyValue('--diff-custom'); }, 500);
+        }
+    });
+
+    // Event listeners for new options (just call setInitialSpeed('custom') to update the label when interacting with other settings)
+    opponentGapInput.addEventListener('change', () => setInitialSpeed('custom'));
+    speedIncrementInput.addEventListener('change', () => setInitialSpeed('custom'));
+    playerColorInput.addEventListener('change', () => {
+        // No need to set difficulty for color, but update the player's color instantly
+        player.color = playerColorInput.value;
+    });
+
+
+    // Handle initial sizing and resizing
+    window.addEventListener('resize', resetGame);
+    
+    // Initial load: setup Firebase and show the start message
+    window.onload = function() {
+        authenticateAndSetup(); // Initialize Firebase and start listening for high score
+        resetGame(); // Needed to calculate lane positions before game starts
+        showStartScreen();
+    }
+
+</script>
+
+</body>
+</html>
