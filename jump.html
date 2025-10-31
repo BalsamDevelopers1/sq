@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jumping Doodle Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
+        body {
+            display: flex;
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f7f3e8; /* Notebook paper color */
+            font-family: 'Permanent Marker', cursive;
+            color: #4a4a4a;
+            user-select: none;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 4px solid #4a4a4a;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #d2f8d2, #a1d6a1); /* Light green background */
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none; /* Prevent scrolling on touch */
+        }
+
+        /* --- Score and Powerup Text Display --- */
+
+        #info-overlay {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            display: flex;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        #text-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-right: 15px; /* Space between text and bar */
+            text-align: right;
+            text-shadow: 1px 1px #fff;
+        }
+
+        #score-display {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        #powerup-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff6b6b; /* Red for emphasis */
+            margin-top: 5px;
+        }
+
+        /* --- Power Bar Styles --- */
+
+        #auto-mode-bar {
+            width: 20px;
+            height: 100px; /* Fixed height for the bar */
+            background-color: rgba(0, 0, 0, 0.2); /* Background of the bar container */
+            border: 2px solid #4a4a4a;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            display: none; /* Hidden by default */
+        }
+
+        #auto-mode-fill {
+            width: 100%;
+            /* Height is controlled by JavaScript */
+            position: absolute;
+            bottom: 0; /* Bar fills up from the bottom */
+            transition: background-color 0.5s ease; /* Smooth color change */
+        }
+
+
+        /* --- Game Over Message & Avatar Selection Modal Styles --- */
+
+        .overlay-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50; /* Higher Z-index to cover the game */
+        }
+
+        .modal-content {
+            background: #fff;
+            border: 4px dashed #ff6b6b; /* Red dashed border for visibility */
+            padding: 20px 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: 350px;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #ff6b6b;
+            font-size: 2.5rem;
+        }
+
+        .modal-content p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        /* Avatar Selection Grid */
+        #avatar-selection-grid {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .avatar-button-modal {
+            background: none;
+            border: 3px dashed #4a4a4a;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .avatar-button-modal:hover {
+            background-color: #ffe0b2;
+            transform: scale(1.05);
+            border-color: #ff9800;
+        }
+
+        .avatar-emoji {
+            font-size: 2.5rem;
+            line-height: 1;
+        }
+
+        .avatar-label {
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        #restart-button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: 3px solid #2e7d32;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px #2e7d32;
+            transition: all 0.1s ease;
+        }
+
+        #restart-button:active {
+            box-shadow: 0 1px #2e7d32;
+            transform: translateY(3px);
+        }
+
+        /* --- Control Button Styles (Always Visible) --- */
+        #game-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 350px; 
+            margin-top: 20px; 
+            padding: 0;
+            pointer-events: auto; 
+            z-index: 30;
+        }
+        
+        .control-button {
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            padding: 15px 10px; 
+            font-size: 1.5rem;
+            border-radius: 10px; 
+            cursor: pointer;
+            box-shadow: 0 3px #1a1a1a;
+            transition: all 0.1s ease;
+            opacity: 0.9;
+            user-select: none;
+            flex-grow: 1; 
+            margin: 0 5px;
+        }
+
+        .control-button:active {
+            box-shadow: 0 1px #1a1a1a;
+            transform: translateY(2px);
+        }
+
+        /* --- Footer Styles --- */
+        #footer {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #6a6a6a;
+            text-align: center;
+        }
+
+        /* --- Responsive Styles --- */
+
+        /* Default Desktop Size */
+        @media (min-width: 601px) {
+            #game-container {
+                width: 500px; 
+                height: 750px;
+            }
+        }
+        
+        /* Mobile Size: Use almost full width and fix controls to the bottom edge */
+        @media (max-width: 600px) {
+            #game-container {
+                width: 95vw;
+                height: 70vh;
+            }
+            #game-controls {
+                position: fixed; 
+                bottom: 30px; /* Make space for the footer */
+                left: 0;
+                width: 100vw;
+                padding: 15px 5vw; 
+                box-sizing: border-box;
+                background-color: #f7f3e8; 
+                box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+                justify-content: space-around;
+            }
+            .control-button {
+                padding: 15px 0; 
+                font-size: 2rem;
+                width: 30%; 
+                margin: 0 2vw;
+            }
+
+            #footer {
+                position: fixed;
+                bottom: 5px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="info-overlay">
+        <div id="text-info">
+            <div id="score-display">Score: 0 | Coins: 0</div>
+            <div id="powerup-display" style="display: none;"></div>
+        </div>
+        
+        <!-- POWER BAR -->
+        <div id="auto-mode-bar">
+            <div id="auto-mode-fill"></div>
+        </div>
+    </div>
+    <canvas id="game-canvas"></canvas>
+
+    <!-- AVATAR SELECTION MODAL (Initial screen) -->
+    <div id="selection-modal" class="overlay-modal"> 
+        <div class="modal-content">
+            <h2>Choose Your Jumper!</h2>
+            <p>Select an avatar to start the game. Use the arrow keys (A/D) or the buttons below to move!</p>
+            
+            <div id="avatar-selection-grid">
+                <a data-avatar="stickman" class="avatar-button-modal">
+                    <span class="avatar-emoji">🧍</span>
+                    <span class="avatar-label">Stickman</span>
+                </a>
+
+                <a data-avatar="monkey" class="avatar-button-modal">
+                    <span class="avatar-emoji">🐒</span>
+                    <span class="avatar-label">Monkey</span>
+                </a>
+
+                <a data-avatar="frog" class="avatar-button-modal">
+                    <span class="avatar-emoji">🐸</span>
+                    <span class="avatar-label">Frog</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div id="game-over-modal" class="overlay-modal" style="display: none;">
+        <div class="modal-content">
+            <h2 id="message-title">Game Over!</h2>
+            <p>You fell down, little doodle!</p>
+            <p id="final-score">Final Score: 0</p>
+            <p id="final-coins">Coins Collected: 0</p>
+            <button id="restart-button">Jump Again!</button>
+        </div>
+    </div>
+</div>
+    
+<!-- CONTROLS ARE OUTSIDE THE GAME CONTAINER -->
+<div id="game-controls">
+    <button class="control-button" id="left-button">←</button>
+    <button class="control-button" id="double-jump-button" style="background-color: #ff9800; box-shadow: 0 3px #e68900; font-size: 1.2rem;">⚡ JUMP</button> 
+    <button class="control-button" id="right-button">→</button>
+</div>
+
+<!-- FOOTER -->
+<div id="footer">
+    Developed By Sukesh, Sarvesh, Surendar (G7A)
+</div>
+    
+
+<script>
+    // --- FIREBASE CONFIG (Not used for single-player game state) ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+    // --- END FIREBASE CONFIG ---
+
+
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score-display');
+    const powerupDisplay = document.getElementById('powerup-display'); 
+    const autoModeBar = document.getElementById('auto-mode-bar');
+    const autoModeFill = document.getElementById('auto-mode-fill');
+
+    const selectionModal = document.getElementById('selection-modal');
+    const gameOverModal = document.getElementById('game-over-modal');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const finalCoinsDisplay = document.getElementById('final-coins');
+    const restartButton = document.getElementById('restart-button');
+    const leftButton = document.getElementById('left-button');
+    const rightButton = document.getElementById('right-button');
+    const doubleJumpButton = document.getElementById('double-jump-button'); 
+    const avatarButtons = document.querySelectorAll('.avatar-button-modal');
+    
+    // Character configuration map
+    const AVATAR_MAP = {
+        'stickman': '🧍',
+        'monkey': '🐒',
+        'frog': '🐸'
+    };
+    
+    // Properties for each avatar (size multiplier and vertical offset for better centering)
+    const AVATAR_PROPS = {
+        '🧍': { sizeMultiplier: 1.5, yOffset: 5 }, 
+        '🐒': { sizeMultiplier: 1.1, yOffset: 10 }, 
+        '🐸': { sizeMultiplier: 1.1, yOffset: 10 }  
+    };
+
+    // Collectible configuration (Coins and Power-Ups)
+    const COLLECTIBLE_PROPS = {
+        // Coins
+        'yellow': { emoji: '🟡', value: 10, probability: 0.3, type: 'coin' },
+        'red': { emoji: '🔴', value: 50, probability: 0.05, type: 'coin' }, 
+        
+        // Power-ups
+        'rocket': { emoji: '🚀', value: 0, probability: 0.05, type: 'powerUp', duration: 10000 } // 10 seconds (10000ms)
+    };
+    
+    // Global Constant for power-up duration
+    const ROCKET_DURATION = COLLECTIBLE_PROPS.rocket.duration; 
+
+    let selectedAvatar = AVATAR_MAP['stickman']; 
+
+    // Game Constants
+    const PLATFORM_COUNT = 10;
+    const JUMP_VELOCITY = -15;
+    const GRAVITY = 0.5;
+    const MAX_PLAYER_SPEED = 8;
+    let SCROLL_THRESHOLD = 0; 
+
+    // Game State
+    let player = {};
+    let platforms = [];
+    let collectibles = []; 
+    let score = 0;
+    let coinsCollectedCount = 0;
+    let isGameOver = true;
+    let verticalOffset = 0;
+    let keys = { left: false, right: false, space: false }; 
+    
+    // Power-Up State
+    let doubleJumpAvailable = false; // True if the mid-air jump is unused since last platform hit
+    
+    let isAutoModeActive = false; // Flag for the full auto mode (invincibility + auto-jump/stabilization)
+    let autoModeTimer = 0; // Time in milliseconds when power-up ends
+
+    // Helper to update the score display element
+    function updateScoreDisplay() {
+        scoreDisplay.textContent = `Score: ${score} | Coins: ${coinsCollectedCount}`;
+    }
+
+    // Helper to trigger the double jump (used by keyboard and button)
+    function triggerDoubleJump() {
+        // Double jump is disabled when Auto Mode is active, as Auto Mode handles vertical movement.
+        if (!isGameOver && doubleJumpAvailable && player.vy > 0 && !isAutoModeActive) { 
+            player.vy = JUMP_VELOCITY;
+            doubleJumpAvailable = false;
+        }
+    }
+    
+    // Helper Class for Collectible (Coin or Power-Up)
+    class Collectible {
+        constructor(x, y, propKey, parentPlatform = null) { 
+            this.size = 20;
+            this.x = x;
+            this.y = y;
+            this.propKey = propKey;
+            this.props = COLLECTIBLE_PROPS[propKey];
+            this.parentPlatform = parentPlatform;
+            // Calculate the horizontal offset from the platform's left edge
+            this.offsetX = parentPlatform ? this.x - parentPlatform.x : 0;
+        }
+
+        // Update method to follow the moving platform
+        update() {
+            if (this.parentPlatform && this.parentPlatform.type === 'moving') {
+                this.x = this.parentPlatform.x + this.offsetX;
+            }
+        }
+        
+        draw() {
+            ctx.font = `${this.size}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            // Position the emoji in the center of the collectible's bounding box
+            ctx.fillText(this.props.emoji, this.x + this.size / 2, this.y + this.size / 2);
+        }
+    }
+
+    // Helper Class for Platform (unchanged)
+    class Platform {
+        constructor(x, y, type = 'normal') {
+            this.width = 60 + Math.random() * 40;
+            this.height = 10;
+            this.x = x;
+            this.y = y;
+            this.type = type; // 'normal', 'moving', 'breakable'
+            this.moveDir = 1;
+            this.isBroken = false;
+        }
+
+        draw() {
+            if (this.isBroken) return; 
+
+            ctx.fillStyle = this.getPlatformColor();
+            ctx.strokeStyle = '#4a4a4a';
+            ctx.lineWidth = 2;
+
+            // Draw a rounded rectangle for a doodle feel
+            ctx.beginPath();
+            const radius = 5;
+            ctx.moveTo(this.x + radius, this.y);
+            ctx.lineTo(this.x + this.width - radius, this.y);
+            ctx.arcTo(this.x + this.width, this.y, this.x + this.width, this.y + radius, radius);
+            ctx.lineTo(this.x + this.width, this.y + this.height - radius);
+            ctx.arcTo(this.x + this.width, this.y + this.height, this.x + this.width - radius, this.y + this.height, radius);
+            ctx.lineTo(this.x + radius, this.y + this.height);
+            ctx.arcTo(this.x, this.y + this.height, this.x, this.y + this.height - radius, radius);
+            ctx.lineTo(this.x, this.y + radius);
+            ctx.arcTo(this.x, this.y, this.x + radius, this.y, radius);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw small doodle lines on top
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(this.x + 5, this.y + 3);
+            ctx.lineTo(this.x + this.width - 5, this.y + 3); 
+            ctx.stroke();
+        }
+
+        getPlatformColor() {
+            switch (this.type) {
+                case 'moving': return '#ffcc00'; // Yellow for moving
+                case 'breakable': return '#ff6b6b'; // Red for breakable
+                default: return '#5cb85c'; // Green for normal
+            }
+        }
+
+        update() {
+            if (this.type === 'moving') {
+                this.x += this.moveDir * 2;
+                if (this.x < 0 || this.x + this.width > canvas.width) {
+                    this.moveDir *= -1;
+                }
+            }
+        }
+    }
+
+    // Initialization (Game Setup)
+    function init() {
+        // Set canvas size
+        const container = document.getElementById('game-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        
+        // Update SCROLL_THRESHOLD based on new canvas height
+        SCROLL_THRESHOLD = canvas.height * 0.4; 
+
+        player = {
+            width: 30,
+            height: 30,
+            x: canvas.width / 2 - 15,
+            y: canvas.height - 50,
+            vx: 0,
+            vy: JUMP_VELOCITY, // Start with an initial jump
+            color: '#007bff'
+        };
+
+        platforms = [];
+        collectibles = []; 
+        verticalOffset = 0;
+        score = 0;
+        coinsCollectedCount = 0;
+        isGameOver = false;
+        gameOverModal.style.display = 'none';
+        selectionModal.style.display = 'none';
+        
+        // Hide power-up visual elements
+        powerupDisplay.style.display = 'none'; 
+        autoModeBar.style.display = 'none';
+        
+        // Reset power-up state
+        doubleJumpAvailable = false; 
+        isAutoModeActive = false;
+        autoModeTimer = 0;
+
+        updateScoreDisplay(); 
+        
+        // Create initial platforms
+        generatePlatforms(PLATFORM_COUNT, canvas.height);
+
+        // Add a guaranteed platform at the bottom
+        platforms.push(new Platform(canvas.width / 2 - 50, canvas.height - 20, 'normal'));
+    }
+
+    // Generate platforms randomly (and collectibles above them)
+    function generatePlatforms(count, minY) {
+        let currentY = minY;
+        const maxGap = 80; // Max vertical distance between platforms
+        const minGap = 50;
+
+        const collectibleKeys = Object.keys(COLLECTIBLE_PROPS);
+        const totalProbability = collectibleKeys.reduce((sum, key) => sum + COLLECTIBLE_PROPS[key].probability, 0);
+
+        for (let i = 0; i < count; i++) {
+            const platformType = Math.random() < 0.15 ? 'moving' : (Math.random() < 0.1 ? 'breakable' : 'normal');
+
+            const x = Math.random() * (canvas.width - 100) + 10;
+            currentY -= minGap + Math.random() * (maxGap - minGap);
+
+            const newPlatform = new Platform(x, currentY, platformType);
+            platforms.push(newPlatform);
+            
+            // --- COLLECTIBLE GENERATION LOGIC ---
+            const randomChance = Math.random() * totalProbability;
+            let cumulativeProbability = 0;
+            
+            for (const key of collectibleKeys) {
+                cumulativeProbability += COLLECTIBLE_PROPS[key].probability;
+                if (randomChance <= cumulativeProbability) {
+                    // Place collectible 25px above the platform's top edge
+                    const collectibleSpawnY = newPlatform.y - 25; 
+                    const collectibleInitialX = newPlatform.x + newPlatform.width / 2 - 10;
+                    
+                    // Only link the collectible to the platform if it is a 'moving' platform
+                    const parentPlatformRef = (platformType === 'moving') ? newPlatform : null;
+
+                    collectibles.push(new Collectible(
+                        collectibleInitialX, 
+                        collectibleSpawnY, 
+                        key,
+                        parentPlatformRef // Pass the platform reference
+                    ));
+                    break;
+                }
+            }
+            // --- END COLLECTIBLE GENERATION LOGIC ---
+        }
+    }
+
+    // Main Game Loop
+    let animationFrameId;
+    let lastTime = 0;
+    function gameLoop(currentTime) {
+        if (isGameOver) return;
+        if (lastTime === 0) lastTime = currentTime;
+        const deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
+        update(deltaTime);
+        draw();
+
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    function update(deltaTime) {
+        const now = Date.now();
+        
+        // --- 1. Power-Up Decay and Visual Update (Only for Auto Mode) ---
+        if (isAutoModeActive && now > autoModeTimer) {
+            isAutoModeActive = false;
+        }
+
+        if (isAutoModeActive) {
+            // Display text and bar
+            powerupDisplay.style.display = 'block';
+            autoModeBar.style.display = 'block';
+
+            const remainingTime = autoModeTimer - now;
+            const percentage = Math.max(0, (remainingTime / ROCKET_DURATION) * 100);
+
+            // Update text timer
+            const remaining = Math.ceil(remainingTime / 1000);
+            powerupDisplay.textContent = `🚀 Invincible: ${remaining}s`; 
+            
+            // Update bar height
+            autoModeFill.style.height = `${percentage}%`;
+            
+            // Update bar color (Green -> Yellow -> Red) based on HSL (120 is green, 0 is red)
+            const hue = Math.round((percentage / 100) * 120); 
+            autoModeFill.style.backgroundColor = `hsl(${hue}, 80%, 50%)`;
+
+        } else {
+            // Hide text and bar
+            powerupDisplay.style.display = 'none';
+            autoModeBar.style.display = 'none';
+        }
+
+        // --- 2. Player movement (Horizontal) ---
+        // Horizontal movement is ALWAYS allowed if the game is NOT over.
+        if (keys.left) {
+            player.vx = Math.max(player.vx - 1.5, -MAX_PLAYER_SPEED);
+        } else if (keys.right) {
+            player.vx = Math.min(player.vx + 1.5, MAX_PLAYER_SPEED);
+        } else {
+            // Decelerate if no key is pressed
+            player.vx *= 0.85; 
+        }
+
+        // Apply horizontal velocity and wrap screen
+        player.x += player.vx;
+        if (player.x > canvas.width) {
+            player.x = -player.width;
+        } else if (player.x < -player.width) {
+            player.x = canvas.width;
+        }
+        // --- End Player movement (Horizontal) ---
+
+
+        // 3. Player movement (Vertical/Gravity)
+        player.y += player.vy;
+        player.vy += GRAVITY;
+
+        // --- Auto Jump Logic (Part of Auto Mode) ---
+        // If Auto Mode is on, and the player is falling, automatically trigger a jump!
+        if (isAutoModeActive && player.vy > 0) {
+            player.vy = JUMP_VELOCITY; 
+        }
+        // --- END Auto Jump Logic ---
+
+        // 4. Screen Scrolling / Vertical Offset
+        if (player.y < SCROLL_THRESHOLD && player.vy < 0) {
+            const scrollDistance = SCROLL_THRESHOLD - player.y;
+            verticalOffset += scrollDistance;
+            player.y = SCROLL_THRESHOLD;
+
+            platforms.forEach(p => p.y += scrollDistance);
+            collectibles.forEach(c => c.y += scrollDistance);
+            
+            // Update score based on height reached
+            score = Math.floor(verticalOffset / 10);
+            updateScoreDisplay();
+        }
+
+        // 5. Platform Update (Updates their X position)
+        platforms.forEach(p => p.update());
+        
+        // Collectible Update (Synchronizes collectible X position with moving platforms)
+        collectibles.forEach(c => c.update()); 
+
+        // Remove off-screen (bottom) platforms
+        platforms = platforms.filter(p => p.y < canvas.height + 50);
+
+        // Check if new platforms are needed (keep a minimum density)
+        if (platforms.length < PLATFORM_COUNT) {
+            const highestPlatformY = platforms.reduce((minY, p) => Math.min(minY, p.y), canvas.height);
+            generatePlatforms(PLATFORM_COUNT - platforms.length, highestPlatformY);
+        }
+
+        // 6. Collectible Collision and Cleanup
+        collectibles = collectibles.filter(collectible => {
+            // Collision Check (Player hits collectible)
+            if (
+                player.x < collectible.x + collectible.size &&
+                player.x + player.width > collectible.x &&
+                player.y < collectible.y + collectible.size &&
+                player.y + player.height > collectible.y
+            ) {
+                const props = collectible.props;
+                const propKey = collectible.propKey;
+
+                if (props.type === 'coin') {
+                    // Coin Logic
+                    score += props.value; 
+                    coinsCollectedCount++; 
+                } else if (props.type === 'powerUp') {
+                    // Power-Up Logic
+                    const duration = props.duration;
+                    
+                    if (propKey === 'rocket') {
+                        // ROCKET grants Auto Mode (Invincibility + Auto Jump/Stabilization)
+                        const nowTime = Date.now();
+                        
+                        // Extend duration if already active
+                        const startTime = isAutoModeActive ? autoModeTimer : nowTime;
+                        
+                        isAutoModeActive = true;
+                        autoModeTimer = startTime + duration; 
+                    }
+                }
+
+                updateScoreDisplay(); 
+                return false; // Remove collectible
+            }
+            
+            // Cleanup off-screen collectibles
+            return collectible.y < canvas.height + 50; 
+        });
+
+        // 7. Platform Collision Detection
+        // Only check for collision when falling AND Auto Mode is NOT active.
+        if (player.vy > 0 && !isAutoModeActive) { 
+            platforms.forEach(p => {
+                if (p.isBroken) return;
+
+                // Check for collision with the top surface of the platform
+                if (
+                    player.x < p.x + p.width &&
+                    player.x + player.width > p.x &&
+                    player.y + player.height > p.y &&
+                    player.y + player.height < p.y + p.height + player.vy
+                ) {
+                    player.vy = JUMP_VELOCITY; // Jump!
+                    doubleJumpAvailable = true; // Reset double jump availability
+
+                    if (p.type === 'breakable') {
+                        p.isBroken = true; // Break the platform
+                    }
+                }
+            });
+        }
+
+        // 8. Game Over Check
+        const fellOffBottom = player.y > canvas.height;
+
+        if (fellOffBottom && !isAutoModeActive) {
+            endGame();
+        } 
+        
+        // Auto Mode Effect: Save player from falling off
+        if (fellOffBottom && isAutoModeActive) {
+            // Warp player to the top of the screen to save them
+            player.y = 0; 
+            player.vy = 0; // Stop vertical movement briefly
+        }
+    }
+
+    function draw() {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Get specific properties for the selected avatar
+        const avatarProps = AVATAR_PROPS[selectedAvatar] || { sizeMultiplier: 1.5, yOffset: 5 };
+
+        // --- DRAW PLAYER (AVATAR) ---
+        ctx.font = `${player.height * avatarProps.sizeMultiplier}px sans-serif`; 
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Use a glowing effect if Auto Mode (invincibility) is active
+        if (isAutoModeActive) {
+            ctx.shadowColor = '#007bff';
+            ctx.shadowBlur = 15;
+        } else {
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+        }
+
+        const textX = player.x + player.width / 2;
+        const textY = player.y + player.height / 2 + avatarProps.yOffset; 
+
+        ctx.fillText(selectedAvatar, textX, textY);
+        // Reset shadow for other elements
+        ctx.shadowBlur = 0;
+
+
+        // Draw Platforms
+        platforms.forEach(p => p.draw());
+
+        // Draw Collectibles
+        collectibles.forEach(c => c.draw());
+    }
+
+    function endGame() {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId); // Stop the loop
+        isGameOver = true;
+        
+        // Display final scores
+        finalScoreDisplay.textContent = `Final Score: ${score}`;
+        finalCoinsDisplay.textContent = `Coins Collected: ${coinsCollectedCount}`;
+        
+        gameOverModal.style.display = 'flex';
+    }
+
+    function startGame() {
+        init();
+        isGameOver = false;
+        lastTime = performance.now(); // Initialize the timer for deltaTime
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+    
+    // --- Input Handling ---
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+        if (isGameOver) return; // Prevent input if game is over
+        if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+            keys.left = true;
+            keys.right = false;
+        } else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+            keys.right = true;
+            keys.left = false;
+        } else if (e.key === ' ' && !keys.space) { 
+            e.preventDefault();
+            keys.space = true;
+            // Only trigger manual double jump if Auto Mode is NOT active
+            if (!isAutoModeActive) {
+                triggerDoubleJump(); 
+            }
+        }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+            keys.left = false;
+        } else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+            keys.right = false;
+        } else if (e.key === ' ') {
+            keys.space = false;
+        }
+    });
+
+    // Mobile controls (Buttons)
+    function setMovement(direction, isPressed) {
+        if (isGameOver) return; // Prevent input if game is over
+        if (direction === 'left') {
+            keys.left = isPressed;
+            if (isPressed) keys.right = false;
+        } else if (direction === 'right') {
+            keys.right = isPressed;
+            if (isPressed) keys.left = false;
+        }
+    }
+
+    // Attach button listeners
+    leftButton.addEventListener('touchstart', (e) => { e.preventDefault(); setMovement('left', true); });
+    leftButton.addEventListener('touchend', (e) => { e.preventDefault(); setMovement('left', false); });
+    leftButton.addEventListener('mousedown', () => setMovement('left', true));
+    leftButton.addEventListener('mouseup', () => setMovement('left', false)); 
+    leftButton.addEventListener('mouseleave', () => setMovement('left', false)); 
+
+    rightButton.addEventListener('touchstart', (e) => { e.preventDefault(); setMovement('right', true); });
+    rightButton.addEventListener('touchend', (e) => { e.preventDefault(); setMovement('right', false); });
+    rightButton.addEventListener('mousedown', () => setMovement('right', true));
+    rightButton.addEventListener('mouseup', () => setMovement('right', false));
+    rightButton.addEventListener('mouseleave', () => setMovement('right', false)); 
+    
+    // Double Jump Button Listener
+    doubleJumpButton.addEventListener('click', () => {
+        if (!isAutoModeActive) {
+            triggerDoubleJump();
+        }
+    });
+    doubleJumpButton.addEventListener('touchstart', (e) => { 
+        e.preventDefault(); 
+        if (!isAutoModeActive) {
+            triggerDoubleJump();
+        }
+    });
+
+
+    // Avatar Selection Handler
+    avatarButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const avatarKey = button.getAttribute('data-avatar');
+            selectedAvatar = AVATAR_MAP[avatarKey];
+            startGame();
+        });
+    });
+
+    // Restart button handler
+    restartButton.addEventListener('click', () => {
+        gameOverModal.style.display = 'none';
+        selectionModal.style.display = 'flex'; // Show selection again
+    });
+
+    // Start the game by showing the selection modal on load
+    window.onload = function () {
+        // Initial setup for canvas size, etc.
+        const container = document.getElementById('game-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        SCROLL_THRESHOLD = canvas.height * 0.4; 
+        
+        // Ensure the selection modal is visible first
+        selectionModal.style.display = 'flex';
+        
+        // Note: The game loop starts only after an avatar is selected in the modal.
+    };
+
+    window.addEventListener('resize', () => {
+        // Stop the game loop on resize
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+        // Re-initialize canvas dimensions on resize
+        const container = document.getElementById('game-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        
+        // If the game was running, restart it, otherwise just show the selection screen
+        if (!isGameOver) {
+            startGame();
+        } else {
+             // If game over, just update the size and keep the selection modal visible
+             SCROLL_THRESHOLD = canvas.height * 0.4; 
+        }
+    });
+
+</script>
+
+</body>
+</html>
