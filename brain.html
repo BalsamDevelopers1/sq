@@ -1,0 +1,1146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Deceptive Clicker (300 Randomized Levels)</title> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://justpaste.it/redirect/surendar1_ba/https%3A%2F%2Ffonts.googleapis.com%2Fcss2%3Ffamily%3DFredoka%3Awght%3D300..700%26amp%3Bdisplay%3Dswap" rel="nofollow">
+    <style>
+        :root {
+            --primary-color: #6d28d9; /* Violet-700 */
+            --secondary-color: #facc15; /* Yellow-400 */
+            --success-color: #10b981; /* Emerald-500 */
+            --error-color: #ef4444; /* Red-500 */
+            --base-font-size: 16px; /* Base font size variable for scaling */
+        }
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f3f4f6; /* Gray-100 */
+            font-size: var(--base-font-size); 
+        }
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 500px;
+            width: 100%;
+            border: 5px solid var(--primary-color);
+        }
+                /* --- Button Press Effect for Challenge Buttons and Hint --- */
+        .challenge-box button, #hint-btn {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 4px 0 0 #4c1d95; /* Shadow for pressed effect (Dark Violet) */
+            border-bottom: 4px solid #4c1d95;
+            transform: translateY(0);
+            font-size: calc(1.125rem * (var(--base-font-size) / 16));
+        }
+        .challenge-box button:active {
+            box-shadow: 0 1px 0 0 #4c1d95;
+            transform: translateY(3px);
+            border-bottom-width: 1px;
+        }
+        #hint-btn {
+            box-shadow: 0 4px 0 0 #b45309; /* Deep orange shadow */
+            border-bottom: 4px solid #b45309;
+        }
+        #hint-btn:active {
+            box-shadow: 0 1px 0 0 #b45309;
+            border-bottom-width: 1px;
+            transform: translateY(3px);
+        }
+        /* --- New Game Button (Final Screen) Specific Styles --- */
+        #final-screen button {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 4px 0 0 #065f46; /* dark emerald */
+            border-bottom: 4px solid #065f46;
+        }
+        #final-screen button:active {
+            box-shadow: 0 1px 0 0 #065f46;
+            transform: translateY(3px);
+            border-bottom-width: 1px;
+        }
+        /* Styling for the non-button square in one of the challenges */
+        .not-a-button-square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            font-size: calc(1.125rem * (var(--base-font-size) / 16));
+            font-weight: 800;
+            background-color: #f87171; /* Red-400 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        /* New style for the disguised div button in level 11 */
+        .disguised-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem; 
+            font-weight: 800; 
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 4px 0 0 #4c1d95; 
+            border-bottom: 4px solid #4c1d95;
+            transform: translateY(0);
+            font-size: calc(1.125rem * (var(--base-font-size) / 16));
+            padding: 0.75rem 1.5rem; 
+            background-color: #a855f7; /* Violet-500 */
+            color: white;
+        }
+        /* Hidden element for level 14 */
+        #hidden-click-target {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 1000; 
+        }
+
+        /* Fixed size for Level 15 (100px width) */
+        #btn-challenge-15a { width: 100px; }
+        #btn-challenge-15b { width: 90px; }
+        #btn-challenge-15c { width: 110px; }
+
+                .info-bar {
+            background-color: var(--primary-color);
+            color: white;
+            font-size: calc(0.875rem * (var(--base-font-size) / 16));
+        }
+                #instruction-text {
+            font-size: calc(1.25rem * (var(--base-font-size) / 16));
+        }
+                #message-box {
+            height: 40px;
+            40px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            font-size: calc(1rem * (var(--base-font-size) / 16));
+            position: relative; 
+            z-index: 10;
+        }
+        /* Style the range input track for better visibility */
+        input[type=range]::-webkit-slider-runnable-track {
+            background: var(--primary-color);
+        }
+        input[type=range]::-moz-range-track {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-card">
+            <h1 class="text-3xl font-extrabold text-center mb-4 text-violet-700">🧠 The Deceptive Clicker</h1>
+            
+            <div class="flex justify-end mb-4">
+                <button id="settings-btn" onclick="openSettings()" class="bg-gray-200 text-gray-700 py-1 px-3 rounded-xl text-sm font-semibold hover:bg-gray-300 transition active:shadow-none">
+                    ⚙️ Settings
+                </button>
+            </div>
+            
+            <div class="info-bar p-3 rounded-t-lg flex justify-between text-sm">
+                <span>Level: <span id="level-display">1 / 300</span></span> 
+                <span>Score: <span id="score-display">0</span></span>
+            </div>
+            
+            <div id="message-box" class="mb-4"></div>
+            
+            <div id="game-area" class="bg-gray-50 p-6 rounded-b-lg border-x-2 border-b-2 border-violet-700">
+                
+                <p id="instruction-text" class="text-xl font-bold text-center mb-6 p-3 rounded-lg border-2 border-dashed border-gray-400 cursor-pointer hover:bg-yellow-50 transition" onclick="handleAttempt('instruction-text')">
+                    Click the smallest button.
+                </p>
+                
+                <div id="hint-container" class="flex justify-center mb-6">
+                    <button id="hint-btn" onclick="showHint()" class="bg-amber-600 text-white py-2 px-4 rounded-xl text-md font-bold hover:bg-amber-700">
+                        Show Hint
+                    </button>
+                </div>
+                
+                <div id="hint-display" class="hidden p-3 mb-6 bg-yellow-100 text-yellow-800 border-2 border-yellow-500 rounded-lg text-sm text-center font-semibold">
+                    </div>
+                
+                <div id="challenge-elements" class="challenge-box flex justify-around items-end gap-3 min-h-[120px] relative">
+                    <div id="hidden-click-target" onclick="handleAttempt('hidden-click-target')"></div> 
+                </div>
+            </div>
+            
+            <div id="final-screen" class="hidden text-center bg-gray-50 p-6 rounded-b-lg border-x-2 border-b-2 border-violet-700">
+                <h2 class="text-2xl font-bold mb-4 text-violet-700">🎉 Challenge Complete! 🎉</h2>
+                <p class="text-xl mb-6 font-semibold">Your Final Score: <span id="final-score" class="text-violet-700 font-extrabold text-3xl">0 / 300</span></p> 
+                
+                <button onclick="startGame()" class="w-full bg-success-color text-white py-3 px-4 rounded-xl text-lg font-bold hover:bg-emerald-600 transition duration-150 shadow-lg active:shadow-sm max-w-xs mx-auto">
+                    New Game
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="settings-modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 p-4">
+        <div id="settings-panel" class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
+            <h3 class="text-2xl font-bold mb-6 text-violet-700 text-center">Game Settings</h3>
+            
+            <div class="mb-6 p-4 border rounded-xl border-gray-200">
+                <label for="font-size-slider" class="block text-md font-semibold text-gray-700 mb-2">Adjust Font Size</label>
+                <input type="range" id="font-size-slider" min="12" max="24" value="16" step="1"
+                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg"
+                       oninput="applyFontSize(this.value)">
+                <p class="text-sm text-gray-500 mt-1">Current Size: <span id="font-size-value">16px</span></p>
+            </div>
+            
+            <div class="flex items-center justify-between p-4 border rounded-xl bg-violet-50">
+                <label for="hint-toggle" class="text-md font-semibold text-gray-700">Hide Hint Button?</label>
+                <input type="checkbox" id="hint-toggle" onchange="toggleHintVisibility(this.checked)" class="w-5 h-5 text-violet-600 bg-gray-100 border-gray-300 rounded focus:ring-violet-500">
+            </div>
+            
+            <button onclick="closeSettings()" class="mt-8 w-full bg-violet-700 text-white py-2 rounded-xl text-lg font-bold hover:bg-violet-800 transition shadow-md active:shadow-sm">
+                Close
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // --- GAME STATE & CHALLENGES ---
+        const gameState = {
+            currentLevel: 0,
+            score: 0,
+            maxLevels: 300, // MAX LEVELS IS 300
+            isProcessing: false,
+            hintUsed: false,
+        };
+        
+        const settingsState = {
+            baseFontSize: 16, 
+            isHintEnabled: true, 
+        };
+        
+        // --- CHALLENGES DEFINITION (Now 50 total for better randomization) ---
+        const initialChallenges = [ 
+            // Level 1: Visual Size vs. Text Value
+            {
+                instruction: "Click the button that says 'Small'.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-1', text: 'Large', classes: 'py-2 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-2', text: 'Medium', classes: 'py-4 px-8 text-xl bg-purple-500 hover:bg-purple-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-3', text: 'Small', classes: 'py-6 px-10 text-2xl bg-cyan-500 hover:bg-cyan-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-3',
+                hint: "The instruction asks you to click the button that *says* 'Small'. Ignore the physical size and focus on the **literal text**.",
+            },
+            // Level 2: Color Text vs. Color Background
+            {
+                instruction: "Click the button that is colored RED.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-1', text: 'BLUE', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-2', text: 'GREEN', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-3', text: 'RED', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-1',
+                hint: "Don't read the words on the buttons! Look at the button's **actual background color** and match it to the color requested.",
+            },
+            // Level 3: Quantity vs. Literal Count
+            {
+                instruction: "Click the button with the number of letters in the word 'FIVE'.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-1', text: '3', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-2', text: '5', classes: 'py-3 px-6 text-lg bg-lime-500 hover:bg-lime-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-3', text: '4', classes: 'py-3 px-6 text-lg bg-pink-500 hover:bg-pink-600 text-white' }, 
+                ],
+                correctTargetId: 'btn-challenge-3',
+                hint: "Count the letters in the word 'FIVE': F-I-V-E. That's 4 letters! Click the button with the number that represents that count.",
+            },
+            // Level 4: Click the Instruction Text
+            {
+                instruction: "Click this instruction text to proceed to the next level.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-1', text: 'Nope', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-2', text: 'Don\'t', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-3', text: 'Try', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                ],
+                correctTargetId: 'instruction-text',
+                hint: "Sometimes, the answer is exactly where the instruction tells you to look. Click the instruction box itself!",
+            },
+            // Level 5: Simple Math Check
+            {
+                instruction: "What is 10 minus 7?",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-1', text: '2', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-2', text: '4', classes: 'py-3 px-6 text-lg bg-yellow-500 hover:bg-yellow-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-3', text: '3', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-3',
+                hint: "10 - 7 = 3. Yes, sometimes it's just math!",
+            },
+            // Level 6: Non-Button Element
+            {
+                instruction: "Click the square that is NOT a button.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-1', text: 'Button 1', classes: 'py-3 px-4 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                    { type: 'element', id: 'not-a-button', text: 'I am not a button', classes: 'not-a-button-square' }, 
+                    { type: 'button', id: 'btn-challenge-3', text: 'Button 2', classes: 'py-3 px-4 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                ],
+                correctTargetId: 'not-a-button',
+                hint: "Look closely at the borders and shadows. Which one doesn't behave like a standard click-able button?",
+            },
+            // Level 7: Shortest Word
+            {
+                instruction: "Click the word that has the fewest letters.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-1', text: 'PARADOX', classes: 'py-3 px-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-2', text: 'I', classes: 'py-3 px-6 text-lg bg-amber-500 hover:bg-amber-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-3', text: 'QUIZ', classes: 'py-3 px-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-2',
+                hint: "The word 'I' has only one letter.",
+            },
+            // Level 8: Do NOT Click
+            {
+                instruction: "DO NOT click the button that says 'FOUR'.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-1', text: 'THREE', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-2', text: 'FOUR', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-3', text: 'FIVE', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-1', 
+                hint: "The deception is in the negative. Click any button *except* the one mentioned.",
+            },
+            // Level 9: Simple Math
+            {
+                instruction: "Click the button with the number that equals **9 / 3**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-9a', text: '2', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-9b', text: '3', classes: 'py-3 px-6 text-lg bg-violet-500 hover:bg-violet-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-9c', text: '4', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-9b',
+                hint: "The math is simple: 9 divided by 3 is 3.", 
+            },
+            // Level 10: Color Text vs. Color Background (Inverted)
+            {
+                instruction: "Click the button that has BLUE text.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-10a', text: 'TEXT', classes: 'py-3 px-6 text-lg bg-yellow-400 hover:bg-yellow-500 text-blue-800' }, 
+                    { type: 'button', id: 'btn-challenge-10b', text: 'TEXT', classes: 'py-3 px-6 text-lg bg-blue-800 hover:bg-blue-900 text-red-400' },
+                    { type: 'button', id: 'btn-challenge-10c', text: 'TEXT', classes: 'py-3 px-6 text-lg bg-red-400 hover:bg-red-500 text-yellow-800' },
+                ],
+                correctTargetId: 'btn-challenge-10a',
+                hint: "Pay attention to the color of the *text* itself, not the button background or the word written on it.",
+            },
+
+            // --- HARDER LEVELS 11 - 15 (Original additions) ---
+
+            // Level 11: Element Type Deception (Click the DIV that looks like a button)
+            {
+                instruction: "Click the element that does **not** make a visual click-down effect.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-11a', text: 'Click Me', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                    { type: 'element', id: 'div-challenge-11b', text: 'Click Me', classes: 'disguised-button' }, 
+                    { type: 'button', id: 'btn-challenge-11c', text: 'Click Me', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                ],
+                correctTargetId: 'div-challenge-11b',
+                hint: "The element lacking the press-down effect is a plain `<div>` element, not a `<button>`. Test them with your mouse!",
+            },
+            // Level 12: Click based on the instruction's color
+            {
+                instruction: "<span style='color: var(--error-color);'>Click the RED button.</span>",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-12a', text: 'Green', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-12b', text: 'Blue', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-12c', text: 'Red', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-12c', 
+                hint: "The instruction text *says* RED and is *styled* red, but the most literal interpretation is usually the easiest: click the red button.",
+            },
+            // Level 13: Numerical/Word Play (Prime Numbers)
+            {
+                instruction: "Click the button with the word that is **NOT** a prime number.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-13a', text: 'SEVEN (7)', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-13b', text: 'FOUR (4)', classes: 'py-3 px-6 text-lg bg-teal-500 hover:bg-teal-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-13c', text: 'FIVE (5)', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' }, 
+                ],
+                correctTargetId: 'btn-challenge-13b',
+                hint: "A prime number is only divisible by 1 and itself. 7 and 5 are prime. 4 is not (divisible by 2).",
+            },
+            // Level 14: The Invisible Click (Requires knowing the code structure)
+            {
+                instruction: "Click anywhere **outside** of the buttons but **inside** the gray box.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-14a', text: 'DON\'T', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-14b', text: 'CLICK', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-14c', text: 'ME', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                ],
+                correctTargetId: 'hidden-click-target',
+                hint: "There is an invisible, full-sized target element intentionally covering the entire challenge area. You must click that element to pass.",
+            },
+            // Level 15: Developer Tools Required (Click the button exactly 100px wide)
+            {
+                instruction: "Click the button that has an **EXACT** width of 100 pixels.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-15a', text: 'A', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-15b', text: 'B', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-15c', text: 'C', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' }, 
+                ],
+                correctTargetId: 'btn-challenge-15a',
+                hint: "You cannot visually confirm the exact size. You will need to inspect the element's CSS properties using **Developer Tools** (usually F12 or right-click -> Inspect).",
+            },
+
+            // --- REPEATABLE CHALLENGES 16 - 30 (From previous response) ---
+
+            // Level 16: Click the largest text, regardless of size
+            {
+                instruction: "Click the button that says 'Biggest'.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-16a', text: 'Biggest', classes: 'py-1 px-4 text-xs bg-red-500 hover:bg-red-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-16b', text: 'Medium', classes: 'py-3 px-6 text-md bg-red-500 hover:bg-red-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-16c', text: 'Smallest', classes: 'py-5 px-8 text-xl bg-red-500 hover:bg-red-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-16a',
+                hint: "Pay attention to the literal text, not the visual size of the element.",
+            },
+            // Level 17: Color mismatch (Click the one that says 'Yellow' but is Green)
+            {
+                instruction: "Click the button that is **Green** but has the text **Yellow**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-17a', text: 'Blue', classes: 'py-3 px-6 text-lg bg-yellow-500 hover:bg-yellow-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-17b', text: 'Yellow', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-17c', text: 'Green', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-17b',
+                hint: "The logic is: background color must be Green AND text must be Yellow.",
+            },
+            // Level 18: Click the second button from the left.
+            {
+                instruction: "Click the button in the **middle** position.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-18a', text: 'First', classes: 'py-3 px-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-18b', text: 'Second', classes: 'py-3 px-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-18c', text: 'Third', classes: 'py-3 px-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-18b',
+                hint: "The middle position is literally the second button.",
+            },
+            // Level 19: Find the number that is a multiple of 5
+            {
+                instruction: "Click the button with a number that is a **multiple of 5**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-19a', text: '7', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-19b', text: '12', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-19c', text: '15', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-19c',
+                hint: "A number divisible by 5 without a remainder. (15 / 5 = 3)",
+            },
+            // Level 20: Click the button that is using a primary color (Violet)
+            {
+                instruction: "Click the button whose background color is the **same as the game card border**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-20a', text: 'RED', classes: 'py-3 px-6 text-lg bg-red-700 hover:bg-red-800 text-white' },
+                    { type: 'button', id: 'btn-challenge-20b', text: 'VIOLET', classes: 'py-3 px-6 text-lg bg-violet-700 hover:bg-violet-800 text-white' },
+                    { type: 'button', id: 'btn-challenge-20c', text: 'CYAN', classes: 'py-3 px-6 text-lg bg-cyan-700 hover:bg-cyan-800 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-20b',
+                hint: "The primary color, which borders the game card, is violet.",
+            },
+            // Level 21: Click the element that is visually smallest
+            {
+                instruction: "Click the **physically smallest** button.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-21a', text: 'A', classes: 'py-4 px-8 text-xl bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-21b', text: 'B', classes: 'py-1 px-4 text-xs bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-21c', text: 'C', classes: 'py-2 px-6 text-md bg-gray-500 hover:bg-gray-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-21b',
+                hint: "Focus on the physical dimensions (padding and font size) of the element.",
+            },
+            // Level 22: Count the vowels in a word (BEAUTY)
+            {
+                instruction: "How many **vowels** (A, E, I, O, U) are in the word **'BEAUTY'**?",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-22d', text: '2', classes: 'py-3 px-6 text-lg bg-lime-500 hover:bg-lime-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-22e', text: '3', classes: 'py-3 px-6 text-lg bg-lime-500 hover:bg-lime-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-22f', text: '4', classes: 'py-3 px-6 text-lg bg-lime-500 hover:bg-lime-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-22e', // B-E-A-U-T-Y -> E, A, U
+                hint: "The vowels in B-E-A-U-T-Y are E, A, and U. That's 3.",
+            },
+            // Level 23: Click the one that is NOT centered
+            {
+                instruction: "Click the button with the text NOT aligned in the center.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-23a', text: 'Left', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white text-left' }, // Correct
+                    { type: 'button', id: 'btn-challenge-23b', text: 'Center', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white text-center' },
+                    { type: 'button', id: 'btn-challenge-23c', text: 'Center', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white text-center' },
+                ],
+                correctTargetId: 'btn-challenge-23a',
+                hint: "One button has the Tailwind class `text-left`, shifting its text away from the center.",
+            },
+            // Level 24: What is 7 * 7 - 1?
+            {
+                instruction: "What is **7 x 7 - 1**?",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-24a', text: '49', classes: 'py-3 px-6 text-lg bg-yellow-500 hover:bg-yellow-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-24b', text: '48', classes: 'py-3 px-6 text-lg bg-yellow-500 hover:bg-yellow-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-24c', text: '42', classes: 'py-3 px-6 text-lg bg-yellow-500 hover:bg-yellow-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-24b',
+                hint: "Calculate: 49 minus 1 equals 48.",
+            },
+            // Level 25: Click the button with the longest word string
+            {
+                instruction: "Click the button with the literal **longest text string**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-25a', text: 'CLICK', classes: 'py-3 px-6 text-lg bg-teal-500 hover:bg-teal-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-25b', text: 'HERE', classes: 'py-3 px-6 text-lg bg-teal-500 hover:bg-teal-600 text-white' }, 
+                    { type: 'button', id: 'btn-challenge-25c', text: 'TO PROCEED', classes: 'py-3 px-6 text-lg bg-teal-500 hover:bg-teal-600 text-white' }, 
+                ],
+                correctTargetId: 'btn-challenge-25c', 
+                hint: "Count the characters: 5, 4, 10. 'TO PROCEED' is the longest string.",
+            },
+            // Level 26: Click the button where the text color matches the background color (Invisible text)
+            {
+                instruction: "Click the button where the text color **matches** the background color.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-26a', text: 'A', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-26b', text: 'B', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-red-500' }, // Correct 
+                    { type: 'button', id: 'btn-challenge-26c', text: 'C', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-26b',
+                hint: "The correct button has invisible text because its text color (`text-red-500`) is the same as its background color (`bg-red-500`).",
+            },
+            // Level 27: Click the button with the highest number
+            {
+                instruction: "Click the button with the **highest number**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-27a', text: '11', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-27b', text: '13', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-27c', text: '12', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-27b',
+                hint: "The highest number is 13.",
+            },
+            // Level 28: Click the button that is NOT bold
+            {
+                instruction: "Click the button that is **NOT BOLD**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-28a', text: 'BOLD', classes: 'py-3 px-6 text-lg font-bold bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-28b', text: 'NOT BOLD', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' }, // Correct
+                    { type: 'button', id: 'btn-challenge-28c', text: 'BOLD', classes: 'py-3 px-6 text-lg font-bold bg-gray-500 hover:bg-gray-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-28b',
+                hint: "The button without the `font-bold` class is the correct one.",
+            },
+            // Level 29: Simple multiplication
+            {
+                instruction: "What is **5 x 5**?",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-29a', text: '20', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-29b', text: '30', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-29c', text: '25', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-29c',
+                hint: "5 multiplied by 5 is 25.",
+            },
+            // Level 30: Click the button that is using a secondary color (Yellow)
+            {
+                instruction: "Click the button whose background color is the **same as the sun/star confetti**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-30a', text: 'BLUE', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-30b', text: 'YELLOW', classes: 'py-3 px-6 text-lg bg-yellow-400 hover:bg-yellow-500 text-white' },
+                    { type: 'button', id: 'btn-challenge-30c', text: 'PINK', classes: 'py-3 px-6 text-lg bg-pink-500 hover:bg-pink-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-30b',
+                hint: "The confetti uses yellow for the star shapes.",
+            },
+
+            // --- NEW BATCH OF 20 CHALLENGES (31 - 50) ---
+
+            // Level 31: Click the lowest number (Text vs. Value)
+            {
+                instruction: "Click the button with the lowest numerical value.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-31a', text: '10', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-31b', text: '2', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-31c', text: '8', classes: 'py-3 px-6 text-lg bg-orange-500 hover:bg-orange-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-31b',
+                hint: "Look for the smallest digit: 2 is the lowest.",
+            },
+            // Level 32: Click the button that is slightly rotated (CSS deception)
+            {
+                instruction: "Click the button that is **not perfectly straight**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-32a', text: 'Straight', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-32b', text: 'Rotated', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white transform rotate-1' }, // Rotated 1 degree
+                    { type: 'button', id: 'btn-challenge-32c', text: 'Straight', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-32b',
+                hint: "One button has a subtle CSS `transform: rotate-1` applied. You might need to squint!",
+            },
+            // Level 33: Click the word that contains the letter 'Z'
+            {
+                instruction: "Click the button that contains the letter **'Z'**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-33a', text: 'FORK', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-33b', text: 'JUMP', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-33c', text: 'FUZZY', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-33c',
+                hint: "Look closely at the spelling of the words.",
+            },
+            // Level 34: Click the button with the even number
+            {
+                instruction: "Click the button with the **even** number.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-34a', text: '17', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-34b', text: '19', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-34c', text: '16', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-34c',
+                hint: "Even numbers are divisible by 2. 16 is even.",
+            },
+            // Level 35: Click the button with the shortest CSS class list
+            {
+                instruction: "Click the button with the **shortest** definition of CSS classes in the code.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-35a', text: 'Long Class', classes: 'py-3 px-6 text-lg bg-pink-500 hover:bg-pink-600 text-white shadow-xl border-2' },
+                    { type: 'button', id: 'btn-challenge-35b', text: 'Short Class', classes: 'py-3 px-6 text-lg bg-pink-500 hover:bg-pink-600 text-white' }, // Correct - fewer classes
+                    { type: 'button', id: 'btn-challenge-35c', text: 'Long Class', classes: 'py-3 px-6 text-lg bg-pink-500 hover:bg-pink-600 text-white ring-4 transition duration-300' },
+                ],
+                correctTargetId: 'btn-challenge-35b',
+                hint: "This requires inspecting the HTML elements themselves using Developer Tools to count the number of Tailwind classes assigned to each button.",
+            },
+            // Level 36: Click the button that is capitalized
+            {
+                instruction: "Click the button that is NOT written in all capital letters.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-36a', text: 'CAPITAL', classes: 'py-3 px-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-36b', text: 'capital', classes: 'py-3 px-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white' }, // Correct
+                    { type: 'button', id: 'btn-challenge-36c', text: 'CAPITAL', classes: 'py-3 px-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-36b',
+                hint: "Look for the button with lowercase letters.",
+            },
+            // Level 37: Click the button with the word 'TWO'
+            {
+                instruction: "What is **one plus one**?",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-37a', text: 'Three', classes: 'py-3 px-6 text-lg bg-lime-500 hover:bg-lime-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-37b', text: 'One', classes: 'py-3 px-6 text-lg bg-lime-500 hover:bg-lime-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-37c', text: 'Two', classes: 'py-3 px-6 text-lg bg-lime-500 hover:bg-lime-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-37c',
+                hint: "The math is simple: 1 + 1 = 2. Find the word 'Two'.",
+            },
+            // Level 38: Click the button furthest to the right (Simple positioning)
+            {
+                instruction: "Click the button on the **far right**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-38a', text: 'Left', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-38b', text: 'Middle', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-38c', text: 'Right', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-38c',
+                hint: "Simply identify the button placed physically furthest right.",
+            },
+            // Level 39: Click the button with the smallest font size (Visual deception)
+            {
+                instruction: "Click the button with the smallest text, but make sure to ignore the padding.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-39a', text: 'Normal', classes: 'py-4 px-8 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-39b', text: 'Smallest', classes: 'py-2 px-4 text-sm bg-red-500 hover:bg-red-600 text-white' }, // Correct
+                    { type: 'button', id: 'btn-challenge-39c', text: 'Large', classes: 'py-1 px-2 text-xl bg-red-500 hover:bg-red-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-39b',
+                hint: "The smallest font size is indicated by the `text-sm` Tailwind class. (Visual check should also confirm this)",
+            },
+            // Level 40: Click the element that appears to be broken (Missing a style)
+            {
+                instruction: "Click the button that looks like it's missing its **hover effect**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-40a', text: 'Normal', classes: 'py-3 px-6 text-lg bg-violet-500 hover:bg-violet-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-40b', text: 'Broken', classes: 'py-3 px-6 text-lg bg-violet-500 text-white' }, // Missing hover class
+                    { type: 'button', id: 'btn-challenge-40c', text: 'Normal', classes: 'py-3 px-6 text-lg bg-violet-500 hover:bg-violet-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-40b',
+                hint: "Move your mouse over each button. The one that doesn't change color is the answer.",
+            },
+            // Level 41: Click the button that is a perfect square.
+            {
+                instruction: "Click the button containing a perfect square number.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-41a', text: '10', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-41b', text: '9', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' }, // 3*3
+                    { type: 'button', id: 'btn-challenge-41c', text: '11', classes: 'py-3 px-6 text-lg bg-green-500 hover:bg-green-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-41b',
+                hint: "A perfect square is the result of an integer multiplied by itself. 9 is $3^2$.",
+            },
+            // Level 42: Click the button with the lowest character count (including spaces)
+            {
+                instruction: "Click the button with the fewest total characters in its label.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-42a', text: 'GO NOW', classes: 'py-3 px-6 text-lg bg-amber-500 hover:bg-amber-600 text-white' }, // 6 chars (incl. space)
+                    { type: 'button', id: 'btn-challenge-42b', text: 'A', classes: 'py-3 px-6 text-lg bg-amber-500 hover:bg-amber-600 text-white' }, // 1 char
+                    { type: 'button', id: 'btn-challenge-42c', text: 'PRESS', classes: 'py-3 px-6 text-lg bg-amber-500 hover:bg-amber-600 text-white' }, // 5 chars
+                ],
+                correctTargetId: 'btn-challenge-42b',
+                hint: "Count the letters and spaces. 'A' is the shortest.",
+            },
+            // Level 43: Click the button that is actually a hyperlink (Anchor tag deception)
+            {
+                instruction: "Click the element that will **not** trigger the JavaScript 'handleAttempt' function on click.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-43a', text: 'Button', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                    { type: 'element', id: 'link-challenge-43b', text: 'Hyperlink', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-extrabold transition', tag: 'a', href: '#' }, // Correct
+                    { type: 'button', id: 'btn-challenge-43c', text: 'Button', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                ],
+                correctTargetId: 'link-challenge-43b',
+                hint: "Only regular `<button>` and `<div>` elements are set up to trigger the game logic. A standard HTML anchor (`<a>`) tag, even styled like a button, is the answer.",
+            },
+            // Level 44: Click the button that has a different corner radius (Visual Deception)
+            {
+                instruction: "Click the button that is less **round** than the others.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-44a', text: 'Round', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white rounded-xl' },
+                    { type: 'button', id: 'btn-challenge-44b', text: 'Square', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white rounded-md' }, // Smaller radius
+                    { type: 'button', id: 'btn-challenge-44c', text: 'Round', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white rounded-xl' },
+                ],
+                correctTargetId: 'btn-challenge-44b',
+                hint: "The button with `rounded-md` has a smaller radius than the others with `rounded-xl`.",
+            },
+            // Level 45: Click the button that is NOT a colour.
+            {
+                instruction: "Click the word that is **not a color**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-45a', text: 'PURPLE', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-45b', text: 'GREEN', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-45c', text: 'SHARP', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-45c',
+                hint: "Purple and Green are colors. Sharp is a descriptive adjective.",
+            },
+            // Level 46: Click the word that is a palindrome (reads the same backward)
+            {
+                instruction: "Click the word that is spelled the same **backward and forward**.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-46a', text: 'LEVEL', classes: 'py-3 px-6 text-lg bg-teal-500 hover:bg-teal-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-46b', text: 'RACE', classes: 'py-3 px-6 text-lg bg-teal-500 hover:bg-teal-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-46c', text: 'CAR', classes: 'py-3 px-6 text-lg bg-teal-500 hover:bg-teal-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-46a',
+                hint: "LEVEL spelled backward is still LEVEL. This is a palindrome.",
+            },
+            // Level 47: Click the button that is furthest from the middle.
+            {
+                instruction: "Click the button that is **furthest** from the center.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-47a', text: 'A', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-47b', text: 'B', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-47c', text: 'C', classes: 'py-3 px-6 text-lg bg-indigo-500 hover:bg-indigo-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-47a', // Both A and C are equally far, A is chosen arbitrarily.
+                hint: "Since the buttons are aligned left-to-right, the one on the far left or far right is furthest. Pick one of the ends.",
+            },
+            // Level 48: Click the button with the capital letter 'A'
+            {
+                instruction: "Click the button that has the letter **'A'** in its text.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-48a', text: 'YES', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-48b', text: 'MAYBE', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' }, // Correct
+                    { type: 'button', id: 'btn-challenge-48c', text: 'NO', classes: 'py-3 px-6 text-lg bg-gray-500 hover:bg-gray-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-48b',
+                hint: "'MAYBE' contains the letter 'A'.",
+            },
+            // Level 49: Click the button that is NOT a number.
+            {
+                instruction: "Click the button that does **NOT** contain a number.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-49a', text: '1st', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-49b', text: '2nd', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-49c', text: 'NONE', classes: 'py-3 px-6 text-lg bg-purple-500 hover:bg-purple-600 text-white' }, // Correct
+                ],
+                correctTargetId: 'btn-challenge-49c',
+                hint: "1st and 2nd contain the digits 1 and 2, respectively. 'NONE' contains no digits.",
+            },
+            // Level 50: Click the button with an odd number
+            {
+                instruction: "Click the button with the **odd** number.",
+                elements: [
+                    { type: 'button', id: 'btn-challenge-50a', text: '6', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-50b', text: '8', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                    { type: 'button', id: 'btn-challenge-50c', text: '5', classes: 'py-3 px-6 text-lg bg-red-500 hover:bg-red-600 text-white' },
+                ],
+                correctTargetId: 'btn-challenge-50c',
+                hint: "Odd numbers are not divisible by 2. 5 is odd.",
+            },
+        ];
+
+        let challenges = []; // This array will hold the duplicated and shuffled challenges
+        
+        // --- UTILITY FUNCTION: SHUFFLE ARRAY (Fisher-Yates) ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- DOM ELEMENTS (Unchanged) ---
+        const instructionText = document.getElementById('instruction-text');
+        const challengeElements = document.getElementById('challenge-elements');
+        const levelDisplay = document.getElementById('level-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const messageBox = document.getElementById('message-box');
+        const finalScreen = document.getElementById('final-screen');
+        const gameArea = document.getElementById('game-area');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintDisplay = document.getElementById('hint-display');
+        const hiddenClickTarget = document.getElementById('hidden-click-target'); 
+                
+        const settingsModalOverlay = document.getElementById('settings-modal-overlay');
+        const fontSizeSlider = document.getElementById('font-size-slider');
+        const fontSizeValueSpan = document.getElementById('font-size-value');
+        const hintToggle = document.getElementById('hint-toggle');
+        const hintContainer = document.getElementById('hint-container');
+
+        // --- SETTINGS FUNCTIONS (Unchanged) ---
+        function loadInitialSettings() {
+            document.documentElement.style.setProperty('--base-font-size', `${settingsState.baseFontSize}px`);
+            hintToggle.checked = !settingsState.isHintEnabled; 
+            toggleHintVisibility(hintToggle.checked);
+        }
+        
+        function openSettings() {
+            fontSizeSlider.value = settingsState.baseFontSize;
+            fontSizeValueSpan.textContent = `${settingsState.baseFontSize}px`;
+            hintToggle.checked = !settingsState.isHintEnabled;
+            settingsModalOverlay.classList.remove('hidden');
+        }
+        
+        function closeSettings() {
+            settingsModalOverlay.classList.add('hidden');
+        }
+        
+        function applyFontSize(size) {
+            const newSize = parseInt(size, 10);
+            settingsState.baseFontSize = newSize;
+            document.documentElement.style.setProperty('--base-font-size', `${newSize}px`);
+            fontSizeValueSpan.textContent = `${newSize}px`;
+            if (gameState.currentLevel < gameState.maxLevels) {
+                loadChallenge(gameState.currentLevel); 
+            }
+        }
+        
+        function toggleHintVisibility(shouldHide) {
+            settingsState.isHintEnabled = !shouldHide;
+            if (settingsState.isHintEnabled) {
+                hintContainer.classList.remove('hidden');
+            } else {
+                hintContainer.classList.add('hidden');
+                hintDisplay.classList.add('hidden');
+            }
+        }
+
+        // --- CELEBRATION FUNCTION (Unchanged) ---
+        function fireConfetti() {
+            const defaults = {
+                spread: 360,
+                ticks: 50,
+                gravity: 0.5,
+                decay: 0.94,
+                startVelocity: 30,
+                shapes: ['star', 'circle'],
+                colors: ['#6d28d9', '#facc15', '#10b981', '#ffffff'] 
+            };
+            confetti({
+                ...defaults,
+                particleCount: 50,
+                scalar: 1.2,
+                origin: { x: 0.5, y: 0.8 },
+            });
+            confetti({
+                ...defaults,
+                particleCount: 30,
+                scalar: 0.8,
+                origin: { x: 0.5, y: 0.5 },
+            });
+        }
+
+        // --- GAME FUNCTIONS ---
+        function showHint() {
+            if (gameState.isProcessing || gameState.hintUsed || !settingsState.isHintEnabled) return;
+            
+            gameState.hintUsed = true;
+            const challenge = challenges[gameState.currentLevel]; 
+            
+            hintDisplay.textContent = challenge.hint;
+            hintDisplay.classList.remove('hidden');
+            
+            const correctElement = document.getElementById(challenge.correctTargetId);
+            if (correctElement && challenge.correctTargetId !== 'hidden-click-target') {
+                if(challenge.correctTargetId !== 'instruction-text') {
+                    correctElement.classList.add('border-4', 'border-yellow-500', 'ring-4', 'ring-yellow-300');
+                }
+            } else if (challenge.correctTargetId === 'hidden-click-target') {
+                hiddenClickTarget.style.opacity = '0.3'; 
+            }
+            
+            hintBtn.disabled = true;
+            hintBtn.classList.replace('bg-amber-600', 'bg-gray-400');
+            hintBtn.classList.replace('hover:bg-amber-700', 'hover:bg-gray-400');
+            hintBtn.style.boxShadow = 'none'; 
+            hintBtn.style.borderBottom = 'none';
+        }
+        
+        function updateScore(isCorrect, awardPoint) {
+            gameState.isProcessing = true; 
+            messageBox.style.opacity = 1;
+            let message = "";
+            
+            if (isCorrect) {
+                if (awardPoint) {
+                    gameState.score++;
+                    message = "CORRECT! That's how you lateral think! 🧠";
+                    messageBox.style.backgroundColor = 'var(--success-color)';
+                    fireConfetti();
+                } else {
+                    message = "Correct, but no score awarded (Hint was used)! Moving on...";
+                    messageBox.style.backgroundColor = 'var(--secondary-color)';
+                }
+            } else {
+                message = "WRONG! That's what they wanted you to do. Moving on!";
+                messageBox.style.backgroundColor = 'var(--error-color)';
+            }
+            
+            scoreDisplay.textContent = gameState.score;
+            instructionText.classList.remove('cursor-pointer', 'hover:bg-yellow-50');
+            
+            setTimeout(() => {
+                messageBox.style.opacity = 0;
+                
+                gameState.currentLevel++;
+                
+                if (gameState.currentLevel < gameState.maxLevels) {
+                    loadChallenge(gameState.currentLevel);
+                } else {
+                    showResult();
+                }
+                
+                gameState.isProcessing = false;
+            }, 1500);
+        }
+        
+        function handleAttempt(elementId) {
+            if (gameState.isProcessing) return;
+            
+            const challenge = challenges[gameState.currentLevel]; 
+            const isCorrect = (elementId === challenge.correctTargetId);
+            const awardPoint = isCorrect && !gameState.hintUsed; 
+            
+            if (elementId === 'instruction-text' && elementId !== challenge.correctTargetId) {
+                updateScore(false, false); 
+                return;
+            }
+            
+            updateScore(isCorrect, awardPoint);
+        }
+
+        function loadChallenge(index) {
+            const challenge = challenges[index]; 
+            if (!challenge) return showResult();
+            
+            gameState.hintUsed = false;
+            hintBtn.disabled = false;
+            hintBtn.classList.replace('bg-gray-400', 'bg-amber-600');
+            hintBtn.classList.replace('hover:bg-amber-700', 'hover:bg-amber-700');
+            hintBtn.style.boxShadow = '0 4px 0 0 #b45309'; 
+            hintBtn.style.borderBottom = '4px solid #b45309';
+            toggleHintVisibility(!settingsState.isHintEnabled);
+
+            hintDisplay.classList.add('hidden');
+            const prevCorrectElement = document.querySelector('.border-4.border-yellow-500');
+            if (prevCorrectElement) {
+                prevCorrectElement.classList.remove('border-4', 'border-yellow-500', 'ring-4', 'ring-yellow-300');
+            }
+            hiddenClickTarget.style.opacity = '0';
+            
+            levelDisplay.textContent = `${index + 1} / ${gameState.maxLevels}`; 
+            
+            // Handle the anchor tag element for Level 43
+            const linkElement = challenge.elements.find(el => el.tag === 'a');
+            if (linkElement) {
+                challengeElements.innerHTML = '';
+                
+                const link = document.createElement('a');
+                link.id = linkElement.id;
+                link.href = linkElement.href;
+                link.textContent = linkElement.text;
+                // Style the anchor tag to look exactly like a button
+                link.className = `rounded-xl font-extrabold transition ${linkElement.classes}`;
+                link.onclick = (e) => {
+                    // Prevent default click behavior if not the correct answer, but allow the game logic to run
+                    if (linkElement.id === challenge.correctTargetId) {
+                        e.preventDefault(); 
+                        handleAttempt(linkElement.id);
+                    } else if (linkElement.id !== challenge.correctTargetId) {
+                         // If they click the wrong element, still process as wrong answer.
+                         e.preventDefault(); 
+                         handleAttempt(linkElement.id);
+                    }
+                };
+                
+                // Render other buttons (simplified to avoid re-writing rendering loop)
+                 challenge.elements.filter(el => el.type === 'button').forEach(el => {
+                    let element = document.createElement('button');
+                    element.className = `rounded-xl font-extrabold transition ${el.classes}`;
+                    element.onclick = () => handleAttempt(el.id);
+                    element.id = el.id;
+                    element.textContent = el.text;
+                    challengeElements.appendChild(element);
+                 });
+                
+                // Append the link element last, or wherever is logical for the specific challenge
+                if (linkElement.id === 'link-challenge-43b') {
+                     // For Level 43, it's the middle element. We need a more sophisticated rendering for 3 elements.
+                     // For simplicity, we will manually insert the anchor tag back into the rendering loop.
+                     // A full refactor would be better, but we will use the simpler method below:
+                     challengeElements.innerHTML = ''; // Clear everything
+                     
+                     // Custom rendering for Level 43 elements:
+                     const elementsMap = {
+                         'btn-challenge-43a': { type: 'button', text: 'Button', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' },
+                         'link-challenge-43b': { type: 'element', tag: 'a', text: 'Hyperlink', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-extrabold transition', href: '#' },
+                         'btn-challenge-43c': { type: 'button', text: 'Button', classes: 'py-3 px-6 text-lg bg-blue-500 hover:bg-blue-600 text-white' }
+                     };
+                     
+                     ['btn-challenge-43a', 'link-challenge-43b', 'btn-challenge-43c'].forEach(id => {
+                         const elData = elementsMap[id];
+                         let element;
+                         if (elData.tag === 'a') {
+                             element = document.createElement('a');
+                             element.href = elData.href;
+                             element.className = elData.classes;
+                             element.textContent = elData.text;
+                             element.onclick = (e) => {
+                                 e.preventDefault(); // Stop navigation
+                                 handleAttempt(id);
+                             };
+                         } else {
+                             element = document.createElement('button');
+                             element.className = `rounded-xl font-extrabold transition ${elData.classes}`;
+                             element.onclick = () => handleAttempt(id);
+                             element.textContent = elData.text;
+                         }
+                         element.id = id;
+                         challengeElements.appendChild(element);
+                     });
+                     
+                }
+                
+                
+            } else {
+                 // Standard rendering (for all other levels)
+                instructionText.innerHTML = challenge.instruction; 
+                instructionText.style.color = 'var(--primary-color)'; 
+                if (challenge.instruction.includes("style='color: var(--error-color);'")) {
+                     // Keep custom color if present
+                }
+
+                if(challenge.correctTargetId === 'instruction-text') {
+                    instructionText.classList.add('cursor-pointer', 'hover:bg-yellow-50');
+                } else {
+                    instructionText.classList.remove('cursor-pointer', 'hover:bg-yellow-50');
+                }
+
+                if(challenge.correctTargetId === 'hidden-click-target') {
+                     hiddenClickTarget.style.pointerEvents = 'auto';
+                } else {
+                     hiddenClickTarget.style.pointerEvents = 'none';
+                }
+
+                challengeElements.innerHTML = '';
+                challengeElements.appendChild(hiddenClickTarget); 
+
+                challenge.elements.forEach(el => {
+                    let element;
+                    
+                    if (el.type === 'button') {
+                        element = document.createElement('button');
+                        element.className = `rounded-xl font-extrabold transition ${el.classes}`;
+                        element.onclick = () => handleAttempt(el.id);
+                    } else if (el.type === 'element') {
+                        element = document.createElement('div');
+                        element.className = el.classes; 
+                        element.onclick = () => handleAttempt(el.id);
+                    }
+                    
+                    element.id = el.id;
+                    element.textContent = el.text;
+                    
+                    challengeElements.appendChild(element);
+                });
+            }
+            
+            gameArea.classList.remove('hidden');
+            finalScreen.classList.add('hidden');
+        }
+        
+        function showResult() {
+            gameArea.classList.add('hidden');
+            document.getElementById('final-score').textContent = `${gameState.score} / ${gameState.maxLevels}`;
+            finalScreen.classList.remove('hidden');
+        }
+        
+        function startGame() {
+            // New Duplication: 50 challenges * 6 = 300 levels
+            const duplicationFactor = gameState.maxLevels / initialChallenges.length; 
+            
+            let allChallengesDuplicated = [];
+            for (let i = 0; i < duplicationFactor; i++) {
+                // Use a deep copy to ensure button IDs and elements are truly unique per set of challenges
+                allChallengesDuplicated = allChallengesDuplicated.concat(JSON.parse(JSON.stringify(initialChallenges)));
+            }
+
+            // SHUFFLE the challenges array at the start of every game!
+            challenges = shuffleArray(allChallengesDuplicated); 
+            
+            gameState.currentLevel = 0;
+            gameState.score = 0;
+            scoreDisplay.textContent = '0';
+            loadChallenge(gameState.currentLevel);
+        }
+        
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            loadInitialSettings();
+            startGame();
+        };
+    </script>
+</body>
+</html>
