@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Narrative Engine</title>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #e6e9f0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 30px; /* Added margin to accommodate the footer */
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+        }
+        /* Style for the Initial Setup Screen */
+        #initial-setup {
+            padding: 20px;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #initial-setup h2 {
+            color: #34495e;
+        }
+        /* Style for the small text inputs */
+        .input-area-small {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        /* Styles for the main game elements */
+        #game-interface {
+            display: none; /* Hidden on load */
+        }
+        #current-prompt {
+            font-style: italic;
+            color: #2980b9;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+            background-color: #f0f8ff;
+            font-weight: bold;
+        }
+        #story-display {
+            border: 1px solid #bdc3c7;
+            padding: 20px;
+            min-height: 180px;
+            margin-bottom: 20px;
+            background-color: #f7f9fb;
+            border-radius: 6px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            color: #34495e;
+            font-size: 1.1em;
+        }
+        .input-area {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            box-sizing: border-box;
+            border: 2px solid #27ae60;
+            border-radius: 6px;
+            resize: vertical;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .input-area:focus {
+            border-color: #1abc9c;
+            outline: none;
+        }
+        /* Style for Word Count */
+        #word-count {
+            text-align: right;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        /* Style for the new Feedback Box */
+        #feedback-box {
+            border: 1px solid #34495e;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            background-color: #ecf0f1;
+            display: none; /* Hidden until the game ends */
+        }
+        #feedback-box h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        #feedback-input {
+            width: 100%;
+            height: 60px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        #submit-feedback {
+            background-color: #3498db; /* Blue for Feedback */
+            margin-top: 10px;
+        }
+        #submit-feedback:hover {
+            background-color: #2980b9;
+        }
+        /* Button styles */
+        .game-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        #submit-button {
+            background-color: #2ecc71;
+        }
+        #submit-button:hover {
+            background-color: #27ae60;
+        }
+        #initial-setup button {
+            background-color: #2ecc71;
+            margin-top: 15px;
+        }
+        #initial-setup button:hover {
+            background-color: #27ae60;
+        }
+        #save-button {
+            background-color: #f39c12;
+         }
+        #save-button:hover {
+            background-color: #e67e22;
+        }
+        /* Modified Footer Style */
+        .page-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            font-size: 0.85em;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+            /* **MODIFICATION: Added font-style: italic;** */
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>The Narrative Engine</h1>
+
+    <div id="initial-setup">
+        <h2>Set the Scene!</h2>
+        <p>Define the character, setting, and initial conflict to start your story.</p>
+        <input type="text" id="setup-name" class="input-area-small" placeholder="1. Character Name (e.g., Elara)">
+        <input type="text" id="setup-setting" class="input-area-small" placeholder="2. Setting (e.g., A derelict space station)">
+        <input type="text" id="setup-conflict" class="input-area-small" placeholder="3. Initial Conflict (e.g., The life support system is failing)">
+        <button class="game-button" onclick="submitInitialStory()">Start Game</button>
+    </div>
+
+    <div id="game-interface">
+        <div id="current-prompt"></div>
+        <div id="story-display"></div>
+
+        <textarea id="user-input" class="input-area" placeholder="Continue the story here..."></textarea>
+
+        <p id="word-count">Words: 0</p>
+
+        <button id="submit-button" class="game-button" onclick="addStorySegment()">Submit Segment</button>
+
+        <button id="save-button" class="game-button" onclick="saveStory()">
+            Download/Save Story (.txt)
+        </button>
+
+        <div id="feedback-box">
+            <h3>Publishing and Feedback ??</h3>
+            <p>Your story is conceptually published! You can download it below. Please submit your feedback on the experience:</p>
+            <textarea id="feedback-input" placeholder="Type your comments here..."></textarea>
+            <button id="submit-feedback" class="game-button" onclick="submitFeedback()">Submit Feedback</button>
+        </div>
+    </div>
+
+    <div class="page-footer">
+        Developed By **Sharran (G7A)**
+    </div>
+
+</div>
+<script>
+    // JavaScript Logic
+    const storyDisplay = document.getElementById('story-display');
+    const setupName = document.getElementById('setup-name');
+    const setupSetting = document.getElementById('setup-setting');
+    const setupConflict = document.getElementById('setup-conflict');
+
+    const userInput = document.getElementById('user-input');
+    const currentPrompt = document.getElementById('current-prompt');
+    const initialSetup = document.getElementById('initial-setup');
+    const gameInterface = document.getElementById('game-interface');
+    const submitButton = document.getElementById('submit-button');
+    const saveButton = document.getElementById('save-button');
+    const wordCountDisplay = document.getElementById('word-count');
+    const feedbackBox = document.getElementById('feedback-box'); // NEW REFERENCE
+
+    let fullStory = "";
+    let segmentCount = 0;
+
+    // Prompts to guide the user's segments
+    const prompts = [
+        "Now, write the first scene where the main character encounters an immediate complication related to their conflict.",
+        "A sudden, unexpected object or person appears. Describe this new arrival and its immediate effect.",
+        "Your main character must decide whether to seek help or face the challenge alone. Describe their action and thoughts.",
+        "The story needs a moment of travel or exploration, leading the character to a new, strange location. Describe this place in detail.",
+        "The conflict escalates with a moment of tension or confrontation. Write the dialogue or action that creates the highest stakes.",
+        "Write the final resolution, where the main character addresses the initial conflict and achieves their goal."
+    ];
+
+    // Function to calculate and update word count
+    function updateWordCount() {
+        const text = userInput.value.trim();
+        const words = text ? text.split(/\s+/) : [];
+        wordCountDisplay.textContent = `Words: ${words.length}`;
+    }
+
+    // Attach the word count function to the user input field
+    userInput.addEventListener('keyup', updateWordCount);
+
+    function submitInitialStory() {
+        const name = setupName.value.trim();
+        const setting = setupSetting.value.trim();
+        const conflict = setupConflict.value.trim();
+
+        if (name === "" || setting === "" || conflict === "") {
+            alert("Please fill in all three starting elements to begin your story!");
+            return;
+        }
+
+        // 1. Generate the initial story text with line breaks (\n) and labels
+        const generatedIntro =
+            `\n---\n` +
+            `**STARTING ELEMENTS**\n` +
+            `\nCharacter: ${name}` +
+            `\nSetting: ${setting}` +
+            `\nConflict: ${conflict}` +
+            `\n---\n` +
+            `\nThe story begins with ${name}, a figure in ${setting}. They realize they must act immediately because of the critical challenge: ${conflict}.`;
+
+        fullStory = generatedIntro;
+
+        // 2. Hide the setup screen and show the main game
+        initialSetup.style.display = 'none';
+        gameInterface.style.display = 'block';
+        feedbackBox.style.display = 'none'; // Hide feedback box initially
+
+        // 3. Update the display with the generated beginning
+        storyDisplay.innerText = fullStory;
+
+        // 4. Start the guided prompts and reset the count
+        segmentCount = 0;
+        updatePrompt();
+        updateWordCount();
+    }
+
+    function addStorySegment() {
+        const userText = userInput.value.trim();
+
+        if (userText === "") {
+            alert("Please write something to continue the story!");
+            return;
+        }
+
+        const newSegment = `\n\n--- Segment ${segmentCount + 1} ---\n${userText}`;
+        fullStory += newSegment;
+        storyDisplay.innerText = fullStory;
+
+        userInput.value = '';
+        segmentCount++;
+        updatePrompt();
+        updateWordCount();
+
+        storyDisplay.scrollTop = storyDisplay.scrollHeight;
+    }
+
+    // Function to manage the game state and button visibility
+    function updatePrompt() {
+        if (segmentCount < prompts.length) {
+            currentPrompt.innerHTML = `**Next Prompt (${segmentCount + 1}/${prompts.length}):** ${prompts[segmentCount]}`;
+            submitButton.style.display = 'block';
+            saveButton.style.display = 'block';
+            userInput.style.display = 'block';
+            wordCountDisplay.style.display = 'block';
+            feedbackBox.style.display = 'none'; // Hide feedback box during game
+        } else {
+            // Game End State
+            currentPrompt.innerHTML = `**THE END!** Your story is now conceptually published!`;
+            submitButton.style.display = 'none';
+            userInput.style.display = 'none';
+            wordCountDisplay.style.display = 'none';
+            feedbackBox.style.display = 'block'; // Show feedback box at the end
+            storyDisplay.scrollTop = storyDisplay.scrollHeight;
+        }
+    }
+
+    // Function to download the story as a .txt file
+    function saveStory() {
+        const storyBlob = new Blob([fullStory], { type: 'text/plain' });
+        const downloadLink = document.createElement('a');
+
+        downloadLink.href = URL.createObjectURL(storyBlob);
+        downloadLink.download = 'NarrativeEngine_Story.txt';
+
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        URL.revokeObjectURL(downloadLink.href);
+
+        alert("Story successfully downloaded as NarrativeEngine_Story.txt!");
+    }
+
+    // NEW FUNCTION: Handles feedback submission (placeholder function)
+    function submitFeedback() {
+        const feedbackText = document.getElementById('feedback-input').value.trim();
+        if (feedbackText) {
+            alert("Thank you for your feedback! If this were a real application, your comments would now be sent to a central server.");
+            document.getElementById('feedback-input').value = '';
+            document.getElementById('submit-feedback').disabled = true;
+            document.getElementById('submit-feedback').textContent = "Feedback Received!";
+        } else {
+            alert("Please type some feedback before submitting.");
+        }
+    }
+</script>
+
+</body>
+</html>
